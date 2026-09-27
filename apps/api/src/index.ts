@@ -3,7 +3,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { config, isConfigured } from "./config.js";
-import { enqueueGeneration } from "./lib/generate.js";
+import { enqueueGeneration, generateToGithub } from "./lib/generate.js";
+import { listCatalogTracks, readLocalMedia } from "./lib/github-catalog.js";
 import { moderatePrompt } from "./lib/moderation.js";
 import { getUserFromToken, supabaseAdmin } from "./lib/supabase.js";
 import {
@@ -30,8 +31,22 @@ app.get("/health", (c) =>
     service: "aimusik-api",
     supabase: isConfigured.supabase,
     elevenLabs: isConfigured.elevenLabs,
+    github: isConfigured.github,
   })
 );
+
+app.get("/v1/media/:kind/:id", (c) => {
+  const kind = c.req.param("kind");
+  if (kind !== "audio" && kind !== "covers") return c.json({ error: "Not found" }, 404);
+  const file = readLocalMedia(kind, c.req.param("id"));
+  if (!file) return c.json({ error: "Not found" }, 404);
+  return new Response(file, {
+    headers: {
+      "Content-Type": kind === "audio" ? "audio/mpeg" : "image/svg+xml",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+});
 
 function bearer(header: string | undefined) {
   if (!header?.startsWith("Bearer ")) return undefined;
@@ -53,6 +68,9 @@ const createTrackSchema = z.object({
 });
 
 app.get("/v1/tracks", async (c) => {
+  if (!isConfigured.supabase) {
+    return c.json({ tracks: await listCatalogTracks() });
+  }
   const user = await getUserFromToken(bearer(c.req.header("Authorization")));
   const { data, error } = await supabaseAdmin
     .from("tracks")
@@ -72,6 +90,11 @@ app.get("/v1/tracks", async (c) => {
 });
 
 app.get("/v1/tracks/:id", async (c) => {
+  if (!isConfigured.supabase) {
+    const track = (await listCatalogTracks()).find((item) => item.id === c.req.param("id"));
+    if (!track) return c.json({ error: "Track not found" }, 404);
+    return c.json({ track });
+  }
   const user = await getUserFromToken(bearer(c.req.header("Authorization")));
   const { data, error } = await supabaseAdmin
     .from("tracks")
@@ -93,9 +116,6 @@ app.get("/v1/tracks/:id", async (c) => {
 });
 
 app.post("/v1/tracks", async (c) => {
-  const user = await requireUser(c);
-  if (!user) return c.json({ error: "Sign in to create music" }, 401);
-
   const parsed = createTrackSchema.safeParse(await c.req.json().catch(() => ({})));
   if (!parsed.success) {
     return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
@@ -103,6 +123,25 @@ app.post("/v1/tracks", async (c) => {
 
   const moderationError = moderatePrompt(parsed.data.prompt);
   if (moderationError) return c.json({ error: moderationError }, 400);
+
+  if (!isConfigured.supabase) {
+    try {
+      const track = await generateToGithub({
+        prompt: parsed.data.prompt,
+        genre: parsed.data.genre,
+        durationMs: parsed.data.durationMs,
+        instrumental: parsed.data.instrumental ?? true,
+      });
+      return c.json({ track }, 201);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Generation failed";
+      const status = message.includes("Daily limit") ? 429 : 502;
+      return c.json({ error: message }, status);
+    }
+  }
+
+  const user = await requireUser(c);
+  if (!user) return c.json({ error: "Sign in to create music" }, 401);
 
   const since = new Date();
   since.setUTCHours(0, 0, 0, 0);
@@ -143,6 +182,18 @@ app.post("/v1/tracks", async (c) => {
 });
 
 app.get("/v1/me", async (c) => {
+  if (!isConfigured.supabase) {
+    const tracks = await listCatalogTracks();
+    const today = new Date().toISOString().slice(0, 10);
+    return c.json({
+      id: "demo-user",
+      email: "demo@aimusik.app",
+      displayName: "Демо-слушатель",
+      avatarUrl: null,
+      generationsUsedToday: tracks.filter((item) => item.createdAt.startsWith(today)).length,
+      dailyGenerationLimit: config.dailyGenerationLimit,
+    });
+  }
   const user = await requireUser(c);
   if (!user) return c.json({ error: "Unauthorized" }, 401);
 
@@ -171,6 +222,10 @@ app.get("/v1/me", async (c) => {
 });
 
 app.get("/v1/me/tracks", async (c) => {
+  if (!isConfigured.supabase) {
+    const tracks = (await listCatalogTracks()).filter((item) => item.userId === "demo-user");
+    return c.json({ tracks });
+  }
   const user = await requireUser(c);
   if (!user) return c.json({ error: "Unauthorized" }, 401);
 

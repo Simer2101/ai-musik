@@ -22,6 +22,7 @@ export type TrackDto = {
   id: string;
   userId: string;
   authorName: string;
+  title?: string;
   prompt: string;
   genre: string | null;
   durationMs: number;

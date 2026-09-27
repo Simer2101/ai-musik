@@ -1,13 +1,15 @@
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 
-import { theme } from '@/constants/Colors';
+import { MiniPlayer } from '@/components/MiniPlayer';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { PlayerProvider } from '@/providers/PlayerProvider';
+import { SettingsProvider, useSettings } from '@/providers/SettingsProvider';
+import { TokensProvider } from '@/providers/TokensProvider';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -23,35 +25,49 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <AuthProvider>
-      <PlayerProvider>
-        <ThemeProvider
-          value={{
-            ...DarkTheme,
-            colors: {
-              ...DarkTheme.colors,
-              background: theme.bg,
-              card: theme.card,
-              text: theme.text,
-              border: theme.border,
-              primary: theme.accent,
-            },
+    <SettingsProvider>
+      <AuthProvider>
+        <TokensProvider>
+          <PlayerProvider>
+            <ThemedNavigation />
+          </PlayerProvider>
+        </TokensProvider>
+      </AuthProvider>
+    </SettingsProvider>
+  );
+}
+
+function ThemedNavigation() {
+  const { colors, themeName, t } = useSettings();
+  const navigationTheme = themeName === 'dark' ? DarkTheme : DefaultTheme;
+
+  return (
+    <ThemeProvider
+      value={{
+        ...navigationTheme,
+        colors: {
+          ...navigationTheme.colors,
+          background: colors.bg,
+          card: colors.card,
+          text: colors.text,
+          border: colors.border,
+          primary: colors.accent,
+        },
+      }}>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            contentStyle: { backgroundColor: colors.bg },
           }}>
-          <View style={{ flex: 1, backgroundColor: theme.bg }}>
-            <Stack
-              screenOptions={{
-                headerStyle: { backgroundColor: theme.bg },
-                headerTintColor: theme.text,
-                contentStyle: { backgroundColor: theme.bg },
-              }}>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="auth" options={{ title: 'Sign in', presentation: 'modal' }} />
-              <Stack.Screen name="track/[id]" options={{ title: 'Track' }} />
-            </Stack>
-            <StatusBar style="light" />
-          </View>
-        </ThemeProvider>
-      </PlayerProvider>
-    </AuthProvider>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth" options={{ title: t.signIn, presentation: 'modal' }} />
+          <Stack.Screen name="track/[id]" options={{ title: t.trackTitle }} />
+        </Stack>
+        <MiniPlayer />
+        <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
+      </View>
+    </ThemeProvider>
   );
 }

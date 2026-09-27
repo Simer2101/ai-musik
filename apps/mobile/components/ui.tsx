@@ -1,21 +1,74 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { coverColors, formatClock } from '@/lib/cover';
+import { Icon } from '@/components/Icon';
+import { PressableScale } from '@/components/PressableScale';
+import { coverColors, coverSource, coverUri, formatClock, trackTitle } from '@/lib/cover';
+import { genreLabel } from '@/lib/wave';
 import type { Track } from '@/lib/types';
-import { theme } from '@/constants/Colors';
+import { useSettings } from '@/providers/SettingsProvider';
 
-export function TrackCover({ track, size = 64 }: { track: Track; size?: number }) {
+export function TrackCover({
+  track,
+  size = 64,
+  radius = 6,
+}: {
+  track: Track;
+  size?: number;
+  radius?: number;
+}) {
+  const { colors } = useSettings();
   const [from, to] = coverColors(track.id);
+  const source = coverSource(track);
+  const shadow = size > 80 ? '0 14px 28px rgba(0,0,0,0.45)' : '0 4px 12px rgba(0,0,0,0.22)';
+  const frame = {
+    width: size,
+    height: size,
+    borderRadius: radius,
+    overflow: 'hidden' as const,
+    backgroundColor: colors.cardAlt,
+    boxShadow: shadow,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  };
+
+  const webUri = coverUri(track);
+  if (Platform.OS === 'web' && webUri) {
+    return (
+      <View style={frame}>
+        <img
+          src={webUri}
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block',
+          }}
+        />
+      </View>
+    );
+  }
+
+  if (source) {
+    return (
+      <View style={frame}>
+        <Image source={source} resizeMode="contain" style={{ width: size, height: size }} />
+      </View>
+    );
+  }
+
   return (
-    <View style={[styles.cover, { width: size, height: size, backgroundColor: from }]}>
-      {track.coverUrl ? (
-        <Image source={{ uri: track.coverUrl }} style={{ width: size, height: size }} />
-      ) : (
-        <View style={[styles.coverFallback, { backgroundColor: to }]}>
-          <Text style={styles.coverLabel}>{(track.genre || 'AI').slice(0, 3).toUpperCase()}</Text>
-        </View>
-      )}
-    </View>
+    <LinearGradient
+      colors={[from, to]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={frame}>
+      <View style={styles.coverFallback}>
+        <Text style={styles.coverLabel}>{(track.genre || 'AI').slice(0, 1)}</Text>
+      </View>
+    </LinearGradient>
   );
 }
 
@@ -28,26 +81,32 @@ export function TrackRow({
   onPress: () => void;
   onLike?: () => void;
 }) {
+  const { colors, t } = useSettings();
   return (
-    <Pressable onPress={onPress} style={styles.row}>
-      <TrackCover track={track} />
+    <PressableScale onPress={onPress} style={styles.row} scaleTo={0.985}>
+      <TrackCover track={track} size={52} radius={10} />
       <View style={styles.rowBody}>
-        <Text numberOfLines={1} style={styles.title}>
-          {track.genre || 'AI track'}
+        <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
+          {trackTitle(track)}
         </Text>
-        <Text numberOfLines={2} style={styles.prompt}>
-          {track.prompt}
-        </Text>
-        <Text style={styles.meta}>
-          {track.authorName} · {formatClock(track.durationMs)} · AI-generated
+        <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 13 }}>
+          {track.authorName}
+          {track.genre ? ` · ${genreLabel(track.genre, t)}` : ''}
+          {` · ${formatClock(track.durationMs)}`}
         </Text>
       </View>
       {onLike ? (
-        <Pressable onPress={onLike} hitSlop={12}>
-          <Text style={[styles.like, track.liked && styles.liked]}>{track.liked ? '♥' : '♡'}</Text>
-        </Pressable>
-      ) : null}
-    </Pressable>
+        <PressableScale onPress={onLike} hitSlop={12} scaleTo={0.86}>
+          <Icon
+            name={track.liked ? 'heartFilled' : 'heart'}
+            color={track.liked ? colors.accent2 : colors.muted}
+            size={20}
+          />
+        </PressableScale>
+      ) : (
+        <Text style={{ color: colors.muted, fontSize: 12 }}>{t.aiGenerated}</Text>
+      )}
+    </PressableScale>
   );
 }
 
@@ -60,21 +119,24 @@ export function PrimaryButton({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const { colors } = useSettings();
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       disabled={disabled}
-      style={[styles.button, disabled && styles.buttonDisabled]}>
-      <Text style={styles.buttonText}>{title}</Text>
-    </Pressable>
+      scaleTo={0.97}
+      style={[styles.button, { backgroundColor: colors.accent }, disabled && styles.buttonDisabled]}>
+      <Text style={[styles.buttonText, { color: colors.buttonText }]}>{title}</Text>
+    </PressableScale>
   );
 }
 
+export function SectionTitle({ children }: { children: ReactNode }) {
+  const { colors } = useSettings();
+  return <Text style={[styles.section, { color: colors.text }]}>{children}</Text>;
+}
+
 const styles = StyleSheet.create({
-  cover: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
   coverFallback: {
     flex: 1,
     alignItems: 'center',
@@ -82,31 +144,24 @@ const styles = StyleSheet.create({
   },
   coverLabel: {
     color: '#fff',
-    fontWeight: '700',
-    letterSpacing: 1,
+    fontWeight: '800',
+    fontSize: 22,
   },
   row: {
     flexDirection: 'row',
     gap: 12,
-    padding: 12,
-    backgroundColor: theme.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
+    paddingVertical: 8,
     alignItems: 'center',
   },
-  rowBody: { flex: 1, gap: 4 },
-  title: { color: theme.text, fontSize: 16, fontWeight: '700' },
-  prompt: { color: theme.muted, fontSize: 13 },
-  meta: { color: theme.accent, fontSize: 11, letterSpacing: 0.3 },
-  like: { color: theme.muted, fontSize: 22, paddingHorizontal: 4 },
-  liked: { color: theme.danger },
+  rowBody: { flex: 1, gap: 3 },
+  title: { fontSize: 16, fontWeight: '600' },
   button: {
-    backgroundColor: theme.accent,
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: 999,
+    paddingVertical: 15,
     alignItems: 'center',
+    boxShadow: '0 10px 24px rgba(139, 124, 255, 0.28)',
   },
   buttonDisabled: { opacity: 0.45 },
-  buttonText: { color: '#140b24', fontWeight: '800', fontSize: 16 },
+  buttonText: { fontWeight: '800', fontSize: 16 },
+  section: { fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
 });

@@ -1,32 +1,46 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { PressableScale } from '@/components/PressableScale';
+import { ScreenBackdrop } from '@/components/ScreenBackdrop';
+import { TokenHint } from '@/components/TokenHint';
 import { PrimaryButton } from '@/components/ui';
-import { theme } from '@/constants/Colors';
 import { api } from '@/lib/api';
+import { DEFAULT_GENRE, GENRES } from '@/lib/wave';
+import { tokensForDuration } from '@/lib/tokens';
 import { useAuth } from '@/providers/AuthProvider';
-
-const GENRES = ['Synthwave', 'Lo-fi', 'House', 'Ambient', 'Rock', 'Hip-hop', 'Cinematic'];
-const LENGTHS = [
-  { label: '30s', value: 30000 },
-  { label: '60s', value: 60000 },
-  { label: '2 min', value: 120000 },
-];
+import { useSettings } from '@/providers/SettingsProvider';
+import { useTokens } from '@/providers/TokensProvider';
 
 export default function CreateScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { colors, t } = useSettings();
+  const { balance, notice, spend, refund, clearNotice } = useTokens();
   const [prompt, setPrompt] = useState('');
-  const [genre, setGenre] = useState('Synthwave');
+  const [genre, setGenre] = useState(DEFAULT_GENRE);
   const [durationMs, setDurationMs] = useState(30000);
   const [instrumental, setInstrumental] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cost = tokensForDuration(durationMs);
+  const granted = notice?.startsWith('granted:') ? Number(notice.slice(8)) : 0;
+
+  const lengths = [
+    { label: `30 ${t.seconds}`, value: 30000, tokens: 5 },
+    { label: `1 ${t.minutes}`, value: 60000, tokens: 10 },
+    { label: `2 ${t.minutes}`, value: 120000, tokens: 20 },
+  ];
+
   const submit = async () => {
     if (!user) {
       router.push('/auth');
+      return;
+    }
+    if (!spend(cost)) {
+      setError(t.notEnoughTokens);
       return;
     }
     setBusy(true);
@@ -35,98 +49,121 @@ export default function CreateScreen() {
       const { track } = await api.createTrack({ prompt, genre, durationMs, instrumental });
       router.push(`/track/${track.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start generation');
+      refund(cost);
+      setError(err instanceof Error ? err.message : t.createError);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>Create AI music</Text>
-      <Text style={styles.copy}>
-        Describe mood, instruments, and tempo. Do not name living artists or copyrighted songs.
-      </Text>
+    <ScreenBackdrop>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}>
+      <Text style={[styles.heading, { color: colors.text }]}>{t.createTitle}</Text>
+      <Text style={{ color: colors.muted }}>{t.createCopy}</Text>
+      <PressableScale onPress={() => router.push('/plans')} style={[styles.wallet, { backgroundColor: colors.card }]}>
+        <TokenHint tokens={balance} />
+        {granted ? (
+          <Text style={{ color: colors.accent2, fontWeight: '700' }}>
+            {t.tokensGranted.replace('{n}', String(granted))}
+          </Text>
+        ) : null}
+        <Text style={{ color: colors.muted }}>{t.planOpen}</Text>
+      </PressableScale>
       <TextInput
         value={prompt}
         onChangeText={setPrompt}
-        placeholder="Night drive synthwave, analog bass, no vocals, 110 BPM"
-        placeholderTextColor={theme.muted}
+        placeholder={t.createPlaceholder}
+        placeholderTextColor={colors.muted}
         multiline
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
       />
-      <Text style={styles.label}>Genre</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t.genre}</Text>
       <View style={styles.chips}>
         {GENRES.map((item) => (
-          <Pressable
-            key={item}
-            onPress={() => setGenre(item)}
-            style={[styles.chip, genre === item && styles.chipOn]}>
-            <Text style={[styles.chipText, genre === item && styles.chipTextOn]}>{item}</Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text style={styles.label}>Length</Text>
-      <View style={styles.chips}>
-        {LENGTHS.map((item) => (
-          <Pressable
-            key={item.value}
-            onPress={() => setDurationMs(item.value)}
-            style={[styles.chip, durationMs === item.value && styles.chipOn]}>
-            <Text style={[styles.chipText, durationMs === item.value && styles.chipTextOn]}>
-              {item.label}
+          <PressableScale
+            key={item.id}
+            onPress={() => setGenre(item.value)}
+            style={[
+              styles.chip,
+              { backgroundColor: colors.cardAlt },
+              genre === item.value && { backgroundColor: colors.accent },
+            ]}>
+            <Text
+              style={{
+                color: genre === item.value ? colors.buttonText : colors.muted,
+                fontWeight: genre === item.value ? '700' : '400',
+              }}>
+              {t[item.labelKey]}
             </Text>
-          </Pressable>
+          </PressableScale>
         ))}
       </View>
-      <Pressable onPress={() => setInstrumental((value) => !value)} style={styles.toggle}>
-        <Text style={styles.toggleText}>{instrumental ? 'Instrumental' : 'May include vocals'}</Text>
-      </Pressable>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Text style={[styles.label, { color: colors.text }]}>{t.length}</Text>
+      <View style={styles.chips}>
+        {lengths.map((item) => (
+          <PressableScale
+            key={item.value}
+            onPress={() => {
+              setDurationMs(item.value);
+              clearNotice();
+            }}
+            style={[
+              styles.chip,
+              { backgroundColor: colors.cardAlt },
+              durationMs === item.value && { backgroundColor: colors.accent },
+            ]}>
+            <Text
+              style={{
+                color: durationMs === item.value ? colors.buttonText : colors.muted,
+                fontWeight: durationMs === item.value ? '700' : '400',
+              }}>
+              {item.label} · {t.tokensCost.replace('{n}', String(item.tokens))}
+            </Text>
+          </PressableScale>
+        ))}
+      </View>
+      <PressableScale
+        onPress={() => setInstrumental((value) => !value)}
+        style={[styles.toggle, { backgroundColor: colors.card }]}>
+        <Text style={{ color: colors.text, fontWeight: '600' }}>
+          {instrumental ? t.instrumental : t.withVocals}
+        </Text>
+      </PressableScale>
+      {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
       <PrimaryButton
-        title={busy ? 'Queuing…' : user ? 'Generate track' : 'Sign in to generate'}
+        title={busy ? t.generating : user ? t.generate : t.signInToGenerate}
         onPress={submit}
         disabled={busy || prompt.trim().length < 8}
       />
     </ScrollView>
+    </ScreenBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 20, gap: 14, paddingBottom: 48 },
-  heading: { color: theme.text, fontSize: 28, fontWeight: '800' },
-  copy: { color: theme.muted },
+  screen: { flex: 1 },
+  content: { padding: 36, gap: 16, paddingBottom: 120, maxWidth: 760, width: '100%', alignSelf: 'center' },
+  heading: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6 },
+  wallet: { borderRadius: 18, padding: 16, gap: 8 },
   input: {
     minHeight: 140,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.card,
-    color: theme.text,
+    borderRadius: 18,
     padding: 14,
     textAlignVertical: 'top',
     fontSize: 16,
   },
-  label: { color: theme.text, fontWeight: '700' },
+  label: { fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: theme.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  chipOn: { backgroundColor: theme.accent, borderColor: theme.accent },
-  chipText: { color: theme.muted },
-  chipTextOn: { color: '#140b24', fontWeight: '700' },
   toggle: {
-    borderRadius: 14,
-    backgroundColor: theme.card,
+    borderRadius: 16,
     padding: 14,
-    borderWidth: 1,
-    borderColor: theme.border,
   },
-  toggleText: { color: theme.text, fontWeight: '600' },
-  error: { color: theme.danger },
 });

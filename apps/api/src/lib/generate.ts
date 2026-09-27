@@ -1,5 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { config, isConfigured } from "../config.js";
 import { coverSvg } from "./covers.js";
+import {
+  listCatalogTracks,
+  publicAudioUrl,
+  publicCoverUrl,
+  publishTrackToGithub,
+  type CatalogTrack,
+} from "./github-catalog.js";
 import { supabaseAdmin } from "./supabase.js";
 import type { TrackRow } from "./tracks.js";
 
@@ -70,7 +79,71 @@ async function runGeneration(trackId: string) {
   }
 }
 
-async function composeMusic(track: TrackRow): Promise<Buffer> {
+function titleFromPrompt(prompt: string) {
+  const first = prompt.trim().split(/[.!?\n]/)[0]?.trim() || "Новый трек";
+  return first.length > 36 ? `${first.slice(0, 33).trim()}…` : first;
+}
+
+export async function generateToGithub(input: {
+  prompt: string;
+  genre?: string;
+  durationMs?: number;
+  instrumental?: boolean;
+  authorName?: string;
+  userId?: string;
+}): Promise<CatalogTrack> {
+  if (!isConfigured.elevenLabs) {
+    throw new Error("ElevenLabs is not configured. Add ELEVENLABS_API_KEY on the API host.");
+  }
+
+  const existing = await listCatalogTracks();
+  const today = new Date().toISOString().slice(0, 10);
+  const usedToday = existing.filter((item) => item.createdAt.startsWith(today)).length;
+  if (usedToday >= config.dailyGenerationLimit) {
+    throw new Error(
+      `Daily limit reached (${config.dailyGenerationLimit} tracks). Try again tomorrow.`
+    );
+  }
+
+  const id = `gen-${randomUUID()}`;
+  const durationMs = input.durationMs ?? 30000;
+  const track: CatalogTrack = {
+    id,
+    userId: input.userId ?? "demo-user",
+    authorName: input.authorName ?? "Демо-слушатель",
+    title: titleFromPrompt(input.prompt),
+    prompt: input.prompt.trim(),
+    genre: input.genre?.trim() || null,
+    durationMs,
+    instrumental: input.instrumental ?? true,
+    status: "ready",
+    errorMessage: null,
+    audioUrl: publicAudioUrl(id),
+    coverUrl: publicCoverUrl(id),
+    isPublic: true,
+    likeCount: 0,
+    playCount: 0,
+    liked: false,
+    aiGenerated: true,
+    createdAt: new Date().toISOString(),
+  };
+
+  const audio = await composeMusic({
+    prompt: track.prompt,
+    genre: track.genre,
+    duration_ms: durationMs,
+    instrumental: track.instrumental,
+  });
+  await publishTrackToGithub(track, audio, coverSvg(track.id, track.genre));
+  return track;
+}
+
+async function composeMusic(track: {
+  prompt: string;
+  genre?: string | null;
+  duration_ms: number;
+  instrumental: boolean;
+}): Promise<Buffer> {
   const prompt = [
     track.prompt.trim(),
     track.genre ? `Genre: ${track.genre}.` : "",

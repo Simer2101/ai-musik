@@ -4,6 +4,7 @@ export type Track = {
   id: string;
   userId: string;
   authorName: string;
+  title?: string;
   prompt: string;
   genre: string | null;
   durationMs: number;
@@ -14,9 +15,16 @@ export type Track = {
   coverUrl: string | null;
   isPublic: boolean;
   likeCount: number;
+  playCount?: number;
   liked: boolean;
   aiGenerated: true;
   createdAt: string;
+};
+
+export type TrackComment = {
+  id: string;
+  author: string;
+  text: string;
 };
 
 export type Profile = {

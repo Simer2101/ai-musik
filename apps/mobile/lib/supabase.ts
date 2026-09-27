@@ -28,7 +28,13 @@ const store = {
   },
 };
 
-export const supabaseConfigured = Boolean(url && anonKey);
+export const supabaseConfigured = Boolean(
+  url &&
+    anonKey &&
+    !url.includes('placeholder') &&
+    !url.includes('YOUR_PROJECT') &&
+    !anonKey.includes('placeholder')
+);
 
 export const supabase = createClient(url || 'https://placeholder.supabase.co', anonKey || 'placeholder', {
   auth: {
