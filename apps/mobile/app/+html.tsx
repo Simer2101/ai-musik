@@ -36,4 +36,13 @@ body {
   body {
     background-color: #f6f5fb;
   }
+}
+img.aimusik-cover {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
 }`;

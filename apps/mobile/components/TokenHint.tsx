@@ -1,16 +1,22 @@
 import { Text, View } from 'react-native';
 
-import { tracksFromTokens } from '@/lib/tokens';
+import { formatTokenCount, generationTimeFromTokens } from '@/lib/tokens';
 import { useSettings } from '@/providers/SettingsProvider';
 
 export function TokenEstimate({ tokens, center }: { tokens: number; center?: boolean }) {
   const { colors, t } = useSettings();
-  const minutes = tracksFromTokens(tokens).min1;
+  const time = generationTimeFromTokens(tokens);
+  const label =
+    time.minutes === 0
+      ? t.tokensAvailableSeconds.replace('{seconds}', String(time.seconds))
+      : time.seconds === 0
+        ? t.tokensAvailable.replace('{minutes}', String(time.minutes))
+        : t.tokensAvailableWithSeconds
+            .replace('{minutes}', String(time.minutes))
+            .replace('{seconds}', String(time.seconds));
 
   return (
-    <Text style={{ color: colors.muted, lineHeight: 20, textAlign: center ? 'center' : 'left' }}>
-      ≈ {t.tokensEstimate.replace('{n}', String(minutes))}
-    </Text>
+    <Text style={{ color: colors.muted, lineHeight: 20, textAlign: center ? 'center' : 'left' }}>{label}</Text>
   );
 }
 
@@ -23,8 +29,9 @@ export function TokenHint({
   granted?: boolean;
   center?: boolean;
 }) {
-  const { colors, t } = useSettings();
-  const title = (granted ? t.tokensGranted : t.tokensBalance).replace('{n}', String(tokens));
+  const { colors, t, language } = useSettings();
+  const locale = language === 'en' ? 'en-US' : 'ru-RU';
+  const title = (granted ? t.tokensGranted : t.tokensBalance).replace('{n}', formatTokenCount(tokens, locale));
 
   return (
     <View style={{ gap: 6, alignItems: center ? 'center' : 'flex-start' }}>

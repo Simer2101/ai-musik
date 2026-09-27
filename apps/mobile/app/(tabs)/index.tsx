@@ -19,7 +19,6 @@ import { useSettings } from '@/providers/SettingsProvider';
 
 const STYLES = GENRES.map((item) => ({
   id: item.id,
-  key: item.labelKey,
   needles: item.needles,
 }));
 
@@ -148,7 +147,7 @@ export default function ListenScreen() {
         {availableStyles.map((item) => (
           <StyleChip
             key={item.id}
-            label={t[item.key]}
+            label={genreLabel(item.id, t)}
             active={activeStyle?.id === item.id}
             onPress={() => setStyle(activeStyle?.id === item.id ? 'all' : item.id)}
           />
@@ -164,7 +163,7 @@ export default function ListenScreen() {
         <View style={{ gap: 4 }}>
           {visible.length ? (
             <View style={styles.rowBetween}>
-              <SectionTitle>{activeStyle ? t[activeStyle.key] : t.stylesTitle}</SectionTitle>
+              <SectionTitle>{activeStyle ? genreLabel(activeStyle.id, t) : t.stylesTitle}</SectionTitle>
               <PressableScale onPress={() => void play(visible[0], visible, { radio: true })} scaleTo={0.96}>
                 <Text style={{ color: colors.accent2, fontWeight: '700' }}>{t.playAll}</Text>
               </PressableScale>

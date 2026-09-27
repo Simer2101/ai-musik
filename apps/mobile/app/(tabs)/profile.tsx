@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
+import { TokenHint } from '@/components/TokenHint';
 import { TrackCover } from '@/components/ui';
 import { BACKGROUND_IDS, buildColors, type BackgroundId, type ThemeName } from '@/constants/Colors';
 import { api } from '@/lib/api';
@@ -12,7 +13,7 @@ import { AVATAR_DEMO, AVATAR_URI, trackTitle } from '@/lib/cover';
 import { demoApi } from '@/lib/demo';
 import { genreLabel } from '@/lib/wave';
 import type { Language } from '@/lib/i18n';
-import { planTitle } from '@/lib/tokens';
+import { isPaidPlanId, planTitle } from '@/lib/tokens';
 import type { Profile, Track } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePlayer } from '@/providers/PlayerProvider';
@@ -53,7 +54,7 @@ export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
   const { colors, t, language, themeName, background, setLanguage, setThemeName, setBackground } = useSettings();
   const { recents, play } = usePlayer();
-  const { planId } = useTokens();
+  const { planId, balance } = useTokens();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mine, setMine] = useState<Track[]>([]);
   const [likes, setLikes] = useState<Track[]>([]);
@@ -136,8 +137,17 @@ export default function ProfileScreen() {
       <View style={[styles.card, { backgroundColor: colors.card }]}>
         <Text style={{ color: colors.muted, fontSize: 12 }}>{t.fieldPlan}</Text>
         <Text style={{ color: colors.success, fontWeight: '700', fontSize: 16 }}>
-          {t.planBadge.replace('{name}', planTitle(planId, { free: t.planFree, lite: t.planLite, pro: t.planPro, studio: t.planStudio }))}
+          {t.planBadge.replace(
+            '{name}',
+            planTitle(planId, { free: t.planFree, start: t.planStart, pro: t.planPro, ultra: t.planUltra })
+          )}
         </Text>
+        <TokenHint tokens={balance} />
+        <PressableScale onPress={() => router.push('/plans')} style={[styles.primary, { backgroundColor: colors.accent, marginTop: 4 }]}>
+          <Text style={[styles.primaryText, { color: colors.buttonText }]}>
+            {isPaidPlanId(planId) ? t.planRenew : t.planBuy}
+          </Text>
+        </PressableScale>
       </View>
 
       {mine.length || likes.length ? (

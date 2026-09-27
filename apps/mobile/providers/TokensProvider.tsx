@@ -1,13 +1,15 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import { planById, type PlanId } from '@/lib/tokens';
+import { FREE_PLAN, isPaidPlanId, planById, type PaidPlanId, type PlanId } from '@/lib/tokens';
 
-const STORAGE_KEY = 'aimusik.wallet.v2';
+const STORAGE_KEY = 'aimusik.wallet.v4';
+const LEGACY_KEY = 'aimusik.wallet.v3';
 
 type Wallet = {
   balance: number;
-  planId: PlanId | null;
+  planId: PlanId;
+  freeClaimed: boolean;
 };
 
 type TokensContextValue = Wallet & {
@@ -15,25 +17,38 @@ type TokensContextValue = Wallet & {
   clearNotice: () => void;
   spend: (amount: number) => boolean;
   refund: (amount: number) => void;
-  subscribe: (planId: PlanId) => { tokens: number; priceRub: number };
+  subscribe: (planId: PaidPlanId) => { tokens: number; priceRub: number };
 };
 
 const TokensContext = createContext<TokensContextValue | undefined>(undefined);
 
+function freeWallet(): Wallet {
+  return { balance: FREE_PLAN.tokens, planId: 'free', freeClaimed: true };
+}
+
 function readWallet(): Wallet {
-  if (Platform.OS !== 'web' || typeof localStorage === 'undefined') {
-    return { balance: 0, planId: null };
-  }
+  if (Platform.OS !== 'web' || typeof localStorage === 'undefined') return freeWallet();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { balance: 0, planId: null };
-    const parsed = JSON.parse(raw) as Wallet;
-    return {
-      balance: Number(parsed.balance) || 0,
-      planId: parsed.planId === 'lite' || parsed.planId === 'pro' || parsed.planId === 'studio' ? parsed.planId : null,
-    };
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_KEY);
+    if (!raw) return freeWallet();
+    const parsed = JSON.parse(raw) as Partial<Wallet>;
+    if (isPaidPlanId(parsed.planId)) {
+      return {
+        balance: Number(parsed.balance) || 0,
+        planId: parsed.planId,
+        freeClaimed: true,
+      };
+    }
+    if (parsed.freeClaimed) {
+      return {
+        balance: Math.max(0, Number(parsed.balance) || 0),
+        planId: 'free',
+        freeClaimed: true,
+      };
+    }
+    return freeWallet();
   } catch {
-    return { balance: 0, planId: null };
+    return freeWallet();
   }
 }
 
@@ -43,11 +58,13 @@ function writeWallet(wallet: Wallet) {
 }
 
 export function TokensProvider({ children }: { children: ReactNode }) {
-  const [wallet, setWallet] = useState<Wallet>({ balance: 0, planId: null });
+  const [wallet, setWallet] = useState<Wallet>(readWallet);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    setWallet(readWallet());
+    const next = readWallet();
+    setWallet(next);
+    writeWallet(next);
   }, []);
 
   const commit = (next: Wallet) => {
@@ -71,12 +88,7 @@ export function TokensProvider({ children }: { children: ReactNode }) {
       subscribe: (planId) => {
         const plan = planById(planId);
         if (!plan) return { tokens: 0, priceRub: 0 };
-        if (wallet.planId === planId) {
-          setNotice(null);
-          return { tokens: 0, priceRub: 0 };
-        }
-        // A plan replaces the previous one, so the balance is reset to its quota.
-        commit({ balance: plan.tokens, planId });
+        commit({ balance: plan.tokens, planId, freeClaimed: true });
         setNotice(`granted:${plan.tokens}`);
         return { tokens: plan.tokens, priceRub: plan.priceRub };
       },
@@ -92,4 +104,3 @@ export function useTokens() {
   if (!ctx) throw new Error('useTokens must be used inside TokensProvider');
   return ctx;
 }
-

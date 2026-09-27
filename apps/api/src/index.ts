@@ -62,7 +62,7 @@ async function requireUser(c: { req: { header: (name: string) => string | undefi
 const createTrackSchema = z.object({
   prompt: z.string().min(8).max(800),
   genre: z.string().max(40).optional(),
-  durationMs: z.number().int().min(10000).max(120000).optional(),
+  durationMs: z.number().int().min(10000).max(300000).optional(),
   instrumental: z.boolean().optional(),
   isPublic: z.boolean().optional(),
 });

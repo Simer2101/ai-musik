@@ -14,6 +14,12 @@ export const COVER_ASSETS: Record<string, ImageSourcePropType> = {
   'demo-velvet-sad': require('../assets/covers/cover-velvet.png'),
   'demo-rush-house': require('../assets/covers/cover-rush.png'),
   'demo-afterglow': require('../assets/covers/cover-afterglow.png'),
+  'demo-asphalt-96': require('../assets/covers/cover-city-hop.png'),
+  'demo-city-thunder': require('../assets/covers/cover-neon-rock.png'),
+  'demo-black-smoke': require('../assets/covers/cover-velvet.png'),
+  'demo-late-cipher': require('../assets/covers/cover-rush.png'),
+  'demo-last-string': require('../assets/covers/cover-soft-focus.png'),
+  'demo-nocturne-c': require('../assets/covers/cover-forest.png'),
 };
 
 export const AVATAR_DEMO = require('../assets/covers/avatar-demo.png');
@@ -31,6 +37,12 @@ const COVER_FILES: Record<string, string> = {
   'demo-velvet-sad': 'cover-velvet.png',
   'demo-rush-house': 'cover-rush.png',
   'demo-afterglow': 'cover-afterglow.png',
+  'demo-asphalt-96': 'cover-city-hop.png',
+  'demo-city-thunder': 'cover-neon-rock.png',
+  'demo-black-smoke': 'cover-velvet.png',
+  'demo-late-cipher': 'cover-rush.png',
+  'demo-last-string': 'cover-soft-focus.png',
+  'demo-nocturne-c': 'cover-forest.png',
 };
 
 export function coverUri(track: Track) {

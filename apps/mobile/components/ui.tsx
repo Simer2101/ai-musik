@@ -21,6 +21,8 @@ export function TrackCover({
   const { colors } = useSettings();
   const [from, to] = coverColors(track.id);
   const source = coverSource(track);
+  const inset = size >= 120 ? 10 : size >= 64 ? 6 : 4;
+  const art = Math.max(24, size - inset * 2);
   const shadow = size > 80 ? '0 14px 28px rgba(0,0,0,0.45)' : '0 4px 12px rgba(0,0,0,0.22)';
   const frame = {
     width: size,
@@ -31,6 +33,7 @@ export function TrackCover({
     boxShadow: shadow,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    padding: inset,
   };
 
   const webUri = coverUri(track);
@@ -38,12 +41,16 @@ export function TrackCover({
     return (
       <View style={frame}>
         <img
+          className="aimusik-cover"
           src={webUri}
           alt=""
           style={{
             width: '100%',
             height: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%',
             objectFit: 'contain',
+            objectPosition: 'center',
             display: 'block',
           }}
         />
@@ -54,7 +61,7 @@ export function TrackCover({
   if (source) {
     return (
       <View style={frame}>
-        <Image source={source} resizeMode="contain" style={{ width: size, height: size }} />
+        <Image source={source} resizeMode="contain" style={{ width: art, height: art }} />
       </View>
     );
   }
