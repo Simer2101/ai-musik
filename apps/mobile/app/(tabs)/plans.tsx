@@ -76,7 +76,7 @@ export default function PlansScreen() {
                     {t.planTokens.replace('{n}', formatTokenCount(plan.tokens, locale))}
                   </Text>
                   <Text style={{ color: colors.muted, textAlign: 'center' }}>
-                    {t.planMinutes.replace('{n}', String(plan.minutes))}
+                    {t.planApproxTracks.replace('{n}', String(plan.minutes))}
                   </Text>
                   <Text style={{ color: active ? colors.success : colors.muted, fontWeight: '700', textAlign: 'center' }}>
                     {active ? t.planRenew : t.planBuy}

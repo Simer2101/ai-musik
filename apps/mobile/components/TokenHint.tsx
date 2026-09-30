@@ -7,13 +7,15 @@ export function TokenEstimate({ tokens, center }: { tokens: number; center?: boo
   const { colors, t } = useSettings();
   const time = generationTimeFromTokens(tokens);
   const label =
-    time.minutes === 0
-      ? t.tokensAvailableSeconds.replace('{seconds}', String(time.seconds))
-      : time.seconds === 0
-        ? t.tokensAvailable.replace('{minutes}', String(time.minutes))
-        : t.tokensAvailableWithSeconds
-            .replace('{minutes}', String(time.minutes))
-            .replace('{seconds}', String(time.seconds));
+    (time.minutes === 20 || time.minutes === 30 || time.minutes === 60) && time.seconds === 0
+      ? t.planApproxTracks.replace('{n}', String(time.minutes))
+      : time.minutes === 0
+        ? t.tokensAvailableSeconds.replace('{seconds}', String(time.seconds))
+        : time.seconds === 0
+          ? t.tokensAvailable.replace('{minutes}', String(time.minutes))
+          : t.tokensAvailableWithSeconds
+              .replace('{minutes}', String(time.minutes))
+              .replace('{seconds}', String(time.seconds));
 
   return (
     <Text style={{ color: colors.muted, lineHeight: 20, textAlign: center ? 'center' : 'left' }}>{label}</Text>
