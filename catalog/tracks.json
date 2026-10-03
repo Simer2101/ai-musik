@@ -1,24 +1,3 @@
 {
-  "tracks": [
-    {
-      "id": "upl-f1468849-a5ab-41a6-bcf9-dea46a8e2ce9",
-      "userId": "demo-user",
-      "authorName": "Слушатель",
-      "title": "Test upload",
-      "prompt": "Test upload",
-      "genre": "pop",
-      "durationMs": 30000,
-      "instrumental": false,
-      "status": "ready",
-      "errorMessage": null,
-      "audioUrl": "https://raw.githubusercontent.com/Simer2101/ai-musik/main/catalog/audio/upl-f1468849-a5ab-41a6-bcf9-dea46a8e2ce9.mp3",
-      "coverUrl": "https://raw.githubusercontent.com/Simer2101/ai-musik/main/catalog/covers/upl-f1468849-a5ab-41a6-bcf9-dea46a8e2ce9.svg",
-      "isPublic": true,
-      "likeCount": 0,
-      "playCount": 0,
-      "liked": false,
-      "aiGenerated": false,
-      "createdAt": "2026-10-03T17:37:15.485Z"
-    }
-  ]
+  "tracks": []
 }
