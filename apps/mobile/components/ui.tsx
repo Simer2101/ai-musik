@@ -111,7 +111,9 @@ export function TrackRow({
           />
         </PressableScale>
       ) : (
-        <Text style={{ color: colors.muted, fontSize: 12 }}>{t.aiGenerated}</Text>
+        <Text style={{ color: colors.muted, fontSize: 12 }}>
+          {track.aiGenerated ? t.aiGenerated : t.userUpload}
+        </Text>
       )}
     </PressableScale>
   );

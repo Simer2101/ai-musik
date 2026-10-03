@@ -17,7 +17,7 @@ export type Track = {
   likeCount: number;
   playCount?: number;
   liked: boolean;
-  aiGenerated: true;
+  aiGenerated: boolean;
   createdAt: string;
 };
 

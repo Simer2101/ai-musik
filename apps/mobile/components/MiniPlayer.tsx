@@ -16,7 +16,7 @@ export function MiniPlayer() {
   const desktop = useDesktop();
   const onTabs =
     pathname === '/' ||
-    ['/wave', '/library', '/profile', '/plans'].some((path) => pathname.startsWith(path));
+    ['/wave', '/publish', '/library', '/profile', '/plans'].some((path) => pathname.startsWith(path));
   const { colors } = useSettings();
   const { track, isPlaying, positionMs, durationMs, toggle, next, prev, seek } = usePlayer();
   if (!track || pathname.startsWith('/track/') || pathname.startsWith('/wave')) return null;

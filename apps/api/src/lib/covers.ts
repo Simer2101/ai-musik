@@ -14,9 +14,10 @@ function hashString(value: string): number {
   return hash;
 }
 
-export function coverSvg(seed: string, genre?: string | null): Buffer {
+export function coverSvg(seed: string, genre?: string | null, kind: "ai" | "upload" = "ai"): Buffer {
   const palette = PALETTES[hashString(seed) % PALETTES.length];
-  const label = (genre || "AI").toUpperCase();
+  const label = (genre || (kind === "upload" ? "NEW" : "AI")).toUpperCase();
+  const footer = kind === "upload" ? "UPLOADED" : "AI-GENERATED";
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
   <defs>
@@ -30,7 +31,7 @@ export function coverSvg(seed: string, genre?: string | null): Buffer {
   <circle cx="620" cy="180" r="160" fill="rgba(255,255,255,0.08)"/>
   <circle cx="140" cy="640" r="220" fill="rgba(0,0,0,0.18)"/>
   <text x="64" y="700" fill="white" font-family="Arial, sans-serif" font-size="42" font-weight="700" letter-spacing="6">${escapeXml(label)}</text>
-  <text x="64" y="750" fill="rgba(255,255,255,0.75)" font-family="Arial, sans-serif" font-size="22">AI-GENERATED</text>
+  <text x="64" y="750" fill="rgba(255,255,255,0.75)" font-family="Arial, sans-serif" font-size="22">${footer}</text>
 </svg>`;
   return Buffer.from(svg);
 }

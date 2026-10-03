@@ -89,6 +89,39 @@ export const api = {
       throw error;
     }
   },
+  uploadTrack: async (payload: {
+    title: string;
+    genre?: string;
+    durationMs?: number;
+    audioBase64: string;
+    audioUrl?: string;
+  }) => {
+    try {
+      return await request<{ track: Track }>('/v1/tracks/upload', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: payload.title,
+          genre: payload.genre,
+          durationMs: payload.durationMs,
+          audioBase64: payload.audioBase64,
+        }),
+        timeoutMs: 180000,
+      });
+    } catch (error) {
+      if (payload.audioUrl) {
+        return demoApi.uploadTrack({
+          title: payload.title,
+          genre: payload.genre,
+          durationMs: payload.durationMs,
+          audioUrl: payload.audioUrl,
+        });
+      }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error('Загрузка заняла слишком много времени. Попробуйте ещё раз.');
+      }
+      throw error;
+    }
+  },
   me: () => withDemo(() => request<Profile>('/v1/me'), demoApi.me),
   myTracks: async () => {
     const mine = (await catalogTracks()).filter((item) => item.userId === 'demo-user');

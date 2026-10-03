@@ -321,6 +321,31 @@ export const demoApi = {
     catalog.unshift(created);
     return { track: created };
   },
+  uploadTrack: (payload: {
+    title: string;
+    genre?: string;
+    durationMs?: number;
+    audioUrl: string;
+  }) => {
+    const created = track({
+      id: `upl-${Date.now()}`,
+      userId: DEMO_USER_ID,
+      authorName: DEMO_NAME,
+      title: payload.title,
+      prompt: payload.title,
+      genre: payload.genre ?? DEFAULT_GENRE,
+      playCount: 0,
+      durationMs: payload.durationMs ?? 30000,
+      instrumental: false,
+      likeCount: 0,
+      coverUrl: null,
+      audioUrl: payload.audioUrl,
+      aiGenerated: false,
+      createdAt: new Date().toISOString(),
+    });
+    catalog.unshift(created);
+    return { track: created };
+  },
   me: () => demoProfile,
   myTracks: () => ({
     tracks: withLikes(catalog.filter((item) => item.userId === DEMO_USER_ID)),

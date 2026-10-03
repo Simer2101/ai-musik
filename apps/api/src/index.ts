@@ -6,6 +6,8 @@ import { config, isConfigured } from "./config.js";
 import { enqueueGeneration, generateToGithub } from "./lib/generate.js";
 import { listCatalogTracks, readLocalMedia } from "./lib/github-catalog.js";
 import { moderatePrompt } from "./lib/moderation.js";
+import { decodeAudioBase64, publishUploadedTrack } from "./lib/publish.js";
+import { coverSvg } from "./lib/covers.js";
 import { getUserFromToken, supabaseAdmin } from "./lib/supabase.js";
 import {
   likedTrackIds,
@@ -65,6 +67,13 @@ const createTrackSchema = z.object({
   durationMs: z.number().int().min(10000).max(300000).optional(),
   instrumental: z.boolean().optional(),
   isPublic: z.boolean().optional(),
+});
+
+const uploadTrackSchema = z.object({
+  title: z.string().min(1).max(80),
+  genre: z.string().max(40).optional(),
+  durationMs: z.number().int().min(3000).max(180000).optional(),
+  audioBase64: z.string().min(100),
 });
 
 app.get("/v1/tracks", async (c) => {
@@ -179,6 +188,94 @@ app.post("/v1/tracks", async (c) => {
   const row = data as unknown as TrackRow;
   enqueueGeneration(row.id);
   return c.json({ track: toTrackDto(row) }, 201);
+});
+
+app.post("/v1/tracks/upload", async (c) => {
+  const parsed = uploadTrackSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+
+  const title = parsed.data.title.trim();
+  const moderationError = moderatePrompt(title);
+  if (moderationError) return c.json({ error: moderationError }, 400);
+
+  let audio: Buffer;
+  try {
+    audio = decodeAudioBase64(parsed.data.audioBase64);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Invalid audio" }, 400);
+  }
+
+  if (!isConfigured.supabase) {
+    try {
+      const track = await publishUploadedTrack({
+        title,
+        genre: parsed.data.genre,
+        durationMs: parsed.data.durationMs,
+        audio,
+      });
+      return c.json({ track }, 201);
+    } catch (error) {
+      return c.json({ error: error instanceof Error ? error.message : "Upload failed" }, 502);
+    }
+  }
+
+  const user = await requireUser(c);
+  if (!user) return c.json({ error: "Sign in to publish a track" }, 401);
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const durationMs = Math.min(Math.max(parsed.data.durationMs ?? 30000, 3000), 180000);
+  const { data, error } = await supabaseAdmin
+    .from("tracks")
+    .insert({
+      user_id: user.id,
+      prompt: title,
+      genre: parsed.data.genre?.trim() || null,
+      duration_ms: durationMs,
+      instrumental: false,
+      is_public: true,
+      status: "ready",
+    })
+    .select(TRACK_SELECT)
+    .single();
+
+  if (error) return c.json({ error: error.message }, 500);
+  const row = data as unknown as TrackRow;
+  const audioPath = `${user.id}/${row.id}.mp3`;
+  const coverPath = `${user.id}/${row.id}.svg`;
+
+  const audioUpload = await supabaseAdmin.storage
+    .from("tracks")
+    .upload(audioPath, audio, { contentType: "audio/mpeg", upsert: true });
+  if (audioUpload.error) return c.json({ error: audioUpload.error.message }, 502);
+
+  const coverUpload = await supabaseAdmin.storage
+    .from("covers")
+    .upload(coverPath, coverSvg(row.id, row.genre, "upload"), {
+      contentType: "image/svg+xml",
+      upsert: true,
+    });
+  if (coverUpload.error) return c.json({ error: coverUpload.error.message }, 502);
+
+  const { data: ready, error: updateError } = await supabaseAdmin
+    .from("tracks")
+    .update({ audio_path: audioPath, cover_path: coverPath })
+    .eq("id", row.id)
+    .select(TRACK_SELECT)
+    .single();
+
+  if (updateError) return c.json({ error: updateError.message }, 500);
+  const published = toTrackDto(ready as unknown as TrackRow);
+  published.aiGenerated = false;
+  published.title = title;
+  published.authorName = profile?.display_name ?? published.authorName;
+  return c.json({ track: published }, 201);
 });
 
 app.get("/v1/me", async (c) => {

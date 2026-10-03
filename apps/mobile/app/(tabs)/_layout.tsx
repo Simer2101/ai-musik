@@ -37,6 +37,7 @@ export default function TabLayout() {
           }}>
           <Tabs.Screen name="index" options={{ title: t.tabListen, tabBarIcon: tabIcon('headphones') }} />
           <Tabs.Screen name="wave" options={{ title: t.waveTitle, tabBarIcon: tabIcon('radio') }} />
+          <Tabs.Screen name="publish" options={{ title: t.tabPublish, tabBarIcon: tabIcon('plus') }} />
           <Tabs.Screen name="library" options={{ title: t.tabLibrary, tabBarIcon: tabIcon('library') }} />
           <Tabs.Screen name="plans" options={{ title: t.tabPlans, tabBarIcon: tabIcon('card') }} />
           <Tabs.Screen name="profile" options={{ title: t.tabProfile, tabBarIcon: tabIcon('person') }} />

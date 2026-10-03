@@ -34,7 +34,7 @@ export type TrackDto = {
   isPublic: boolean;
   likeCount: number;
   liked: boolean;
-  aiGenerated: true;
+  aiGenerated: boolean;
   createdAt: string;
 };
 
@@ -43,6 +43,7 @@ export function toTrackDto(row: TrackRow, liked = false): TrackDto {
     id: row.id,
     userId: row.user_id,
     authorName: row.profiles?.display_name ?? "Listener",
+    title: row.prompt,
     prompt: row.prompt,
     genre: row.genre,
     durationMs: row.duration_ms,
