@@ -19,7 +19,6 @@ export default function LibraryScreen() {
   const { user } = useAuth();
   const { play } = usePlayer();
   const { colors, t } = useSettings();
-  const [tab, setTab] = useState<'mine' | 'likes'>('mine');
   const [tracks, setTracks] = useState<Track[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +30,7 @@ export default function LibraryScreen() {
     }
     setRefreshing(true);
     try {
-      const data =
-        user.id === 'demo-user'
-          ? tab === 'mine'
-            ? demoApi.myTracks()
-            : demoApi.myLikes()
-          : tab === 'mine'
-            ? await api.myTracks()
-            : await api.myLikes();
+      const data = user.id === 'demo-user' ? demoApi.myLikes() : await api.myLikes();
       setTracks(data.tracks);
       setError(null);
     } catch (err) {
@@ -46,7 +38,7 @@ export default function LibraryScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [tab, t.libraryError, user]);
+  }, [t.libraryError, user]);
 
   useEffect(() => {
     void load();
@@ -57,7 +49,7 @@ export default function LibraryScreen() {
       <ScreenBackdrop>
         <View style={styles.emptyBox}>
           <View style={styles.emptyInner}>
-            <Text style={[styles.heading, { color: colors.text }]}>{t.libraryTitle}</Text>
+            <Text style={[styles.heading, { color: colors.text }]}>{t.liked}</Text>
             <Text style={[styles.emptyCopy, { color: colors.muted }]}>{t.libraryGuest}</Text>
             <PressableScale onPress={() => router.push('/auth')} style={[styles.link, { backgroundColor: colors.accent }]}>
               <Text style={[styles.linkText, { color: colors.buttonText }]}>{t.signIn}</Text>
@@ -74,24 +66,8 @@ export default function LibraryScreen() {
       style={styles.screen}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={colors.accent} />}>
-      <Text style={[styles.heading, { color: colors.text }]}>{t.libraryTitle}</Text>
+      <Text style={[styles.heading, { color: colors.text }]}>{t.liked}</Text>
       <AdBanner />
-      <View style={[styles.tabs, { backgroundColor: colors.card }]}>
-        <PressableScale
-          onPress={() => setTab('mine')}
-          style={[styles.tab, tab === 'mine' && { backgroundColor: colors.accent }]}>
-          <Text style={{ color: tab === 'mine' ? colors.buttonText : colors.muted, fontWeight: '700' }}>
-            {t.created}
-          </Text>
-        </PressableScale>
-        <PressableScale
-          onPress={() => setTab('likes')}
-          style={[styles.tab, tab === 'likes' && { backgroundColor: colors.accent }]}>
-          <Text style={{ color: tab === 'likes' ? colors.buttonText : colors.muted, fontWeight: '700' }}>
-            {t.liked}
-          </Text>
-        </PressableScale>
-      </View>
       {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
       {tracks[0] ? (
         <View style={styles.actions}>
@@ -127,8 +103,6 @@ const styles = StyleSheet.create({
   heading: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6 },
   link: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 },
   linkText: { fontWeight: '800' },
-  tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, alignSelf: 'flex-start' },
-  tab: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999 },
   actions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   playAll: {
     flexDirection: 'row',
