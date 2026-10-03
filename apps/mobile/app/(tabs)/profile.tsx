@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 120, gap: 16, maxWidth: 880, width: '100%', alignSelf: 'center' },
   box: { flex: 1, padding: 24, justifyContent: 'center', gap: 12 },
   guest: { flex: 1, padding: 36, justifyContent: 'center', alignItems: 'center' },
-  guestInner: { width: '100%', maxWidth: 420, gap: 12 },
+  guestInner: { alignSelf: 'center', width: 420, maxWidth: '100%', gap: 12 },
   guestCopy: { fontSize: 16, lineHeight: 22 },
   guestButton: {
     alignSelf: 'flex-start',

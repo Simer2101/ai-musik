@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 36, gap: 16, paddingBottom: 120, maxWidth: 1100, width: '100%', alignSelf: 'center' },
   emptyBox: { flex: 1, padding: 36, justifyContent: 'center', alignItems: 'center' },
-  emptyInner: { width: '100%', maxWidth: 420, gap: 12 },
+  emptyInner: { alignSelf: 'center', width: 420, maxWidth: '100%', gap: 12 },
   emptyCopy: { fontSize: 16, lineHeight: 22 },
   heading: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6 },
   link: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 },

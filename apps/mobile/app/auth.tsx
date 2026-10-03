@@ -114,7 +114,7 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: 36, justifyContent: 'center', alignItems: 'center' },
-  form: { width: '100%', maxWidth: 420, gap: 12 },
+  form: { alignSelf: 'center', width: 420, maxWidth: '100%', gap: 12 },
   heading: { fontSize: 28, fontWeight: '800' },
   copy: { marginBottom: 8, lineHeight: 22 },
   input: {

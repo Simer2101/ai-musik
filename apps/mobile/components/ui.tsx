@@ -163,8 +163,10 @@ const styles = StyleSheet.create({
   rowBody: { flex: 1, gap: 3 },
   title: { fontSize: 16, fontWeight: '600' },
   button: {
+    alignSelf: 'flex-start',
     borderRadius: 999,
-    paddingVertical: 15,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
     alignItems: 'center',
     boxShadow: '0 10px 24px rgba(139, 124, 255, 0.28)',
   },
