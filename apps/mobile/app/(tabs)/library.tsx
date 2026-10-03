@@ -55,13 +55,15 @@ export default function LibraryScreen() {
   if (!user) {
     return (
       <ScreenBackdrop>
-      <View style={styles.emptyBox}>
-        <Text style={[styles.heading, { color: colors.text }]}>{t.libraryTitle}</Text>
-        <Text style={{ color: colors.muted }}>{t.libraryGuest}</Text>
-        <PressableScale onPress={() => router.push('/auth')} style={[styles.link, { backgroundColor: colors.accent }]}>
-          <Text style={[styles.linkText, { color: colors.buttonText }]}>{t.signIn}</Text>
-        </PressableScale>
-      </View>
+        <View style={styles.emptyBox}>
+          <View style={styles.emptyInner}>
+            <Text style={[styles.heading, { color: colors.text }]}>{t.libraryTitle}</Text>
+            <Text style={[styles.emptyCopy, { color: colors.muted }]}>{t.libraryGuest}</Text>
+            <PressableScale onPress={() => router.push('/auth')} style={[styles.link, { backgroundColor: colors.accent }]}>
+              <Text style={[styles.linkText, { color: colors.buttonText }]}>{t.signIn}</Text>
+            </PressableScale>
+          </View>
+        </View>
       </ScreenBackdrop>
     );
   }
@@ -119,7 +121,9 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 36, gap: 16, paddingBottom: 120, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-  emptyBox: { flex: 1, padding: 24, gap: 12, justifyContent: 'center' },
+  emptyBox: { flex: 1, padding: 36, justifyContent: 'center', alignItems: 'center' },
+  emptyInner: { width: '100%', maxWidth: 420, gap: 12 },
+  emptyCopy: { fontSize: 16, lineHeight: 22 },
   heading: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6 },
   link: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 },
   linkText: { fontWeight: '800' },

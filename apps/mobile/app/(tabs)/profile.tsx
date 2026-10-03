@@ -99,13 +99,17 @@ export default function ProfileScreen() {
   if (!user) {
     return (
       <ScreenBackdrop>
-      <View style={styles.box}>
-        <Text style={[styles.heading, { color: colors.text }]}>{t.profileTitle}</Text>
-        <Text style={{ color: colors.muted }}>{t.profileGuest}</Text>
-        <PressableScale onPress={() => router.push('/auth')} style={[styles.primary, { backgroundColor: colors.accent }]}>
-          <Text style={[styles.primaryText, { color: colors.buttonText }]}>{t.signInOrRegister}</Text>
-        </PressableScale>
-      </View>
+        <View style={styles.guest}>
+          <View style={styles.guestInner}>
+            <Text style={[styles.heading, { color: colors.text }]}>{t.profileTitle}</Text>
+            <Text style={[styles.guestCopy, { color: colors.muted }]}>{t.profileGuest}</Text>
+            <PressableScale
+              onPress={() => router.push('/auth')}
+              style={[styles.guestButton, { backgroundColor: colors.accent }]}>
+              <Text style={[styles.primaryText, { color: colors.buttonText }]}>{t.signInOrRegister}</Text>
+            </PressableScale>
+          </View>
+        </View>
       </ScreenBackdrop>
     );
   }
@@ -271,6 +275,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: 120, gap: 16, maxWidth: 880, width: '100%', alignSelf: 'center' },
   box: { flex: 1, padding: 24, justifyContent: 'center', gap: 12 },
+  guest: { flex: 1, padding: 36, justifyContent: 'center', alignItems: 'center' },
+  guestInner: { width: '100%', maxWidth: 420, gap: 12 },
+  guestCopy: { fontSize: 16, lineHeight: 22 },
+  guestButton: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
   heading: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
   hero: { alignItems: 'center', paddingTop: 28, paddingHorizontal: 24, paddingBottom: 20, gap: 8 },
   avatar: { width: 96, height: 96, borderRadius: 48 },
