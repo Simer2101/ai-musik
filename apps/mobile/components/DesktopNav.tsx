@@ -13,7 +13,6 @@ export function DesktopNav() {
   const items: { href: Href; label: string }[] = [
     { href: '/', label: t.tabListen },
     { href: '/wave', label: t.waveTitle },
-    { href: '/create', label: t.tabCreate },
     { href: '/library', label: t.tabLibrary },
     { href: '/plans', label: t.tabPlans },
     { href: '/profile', label: t.tabProfile },
