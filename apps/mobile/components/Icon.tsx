@@ -19,7 +19,8 @@ export type IconName =
   | 'chevronRight'
   | 'eye'
   | 'eyeOff'
-  | 'speaker';
+  | 'speaker'
+  | 'download';
 
 export function Icon({
   name,
@@ -156,6 +157,14 @@ export function Icon({
           <Path d="M4 9h3.2L12 5v14l-4.8-4H4V9Z" {...stroke} />
           <Path d="M16 8.2a5.2 5.2 0 0 1 0 7.6" {...stroke} />
           <Path d="M18.4 5.6a9 9 0 0 1 0 12.8" {...stroke} />
+        </>
+      ) : null}
+
+      {name === 'download' ? (
+        <>
+          <Path d="M12 4v11" {...stroke} />
+          <Path d="M7.5 11.5 12 16l4.5-4.5" {...stroke} />
+          <Path d="M5 19h14" {...stroke} />
         </>
       ) : null}
 

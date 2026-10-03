@@ -21,10 +21,10 @@ const HERO_COVERS = [
   COVER_ASSETS['demo-rush-house'],
 ];
 
-const PERKS: { icon: IconName; key: 'perkAds' | 'perkCreate' | 'perkWave' | 'perkOrder' | 'perkPause' | 'perkCancel' }[] =
+const PERKS: { icon: IconName; key: 'perkAds' | 'perkDownload' | 'perkWave' | 'perkOrder' | 'perkPause' | 'perkCancel' }[] =
   [
     { icon: 'speaker', key: 'perkAds' },
-    { icon: 'plus', key: 'perkCreate' },
+    { icon: 'download', key: 'perkDownload' },
     { icon: 'radio', key: 'perkWave' },
     { icon: 'shuffle', key: 'perkOrder' },
     { icon: 'headphones', key: 'perkPause' },
