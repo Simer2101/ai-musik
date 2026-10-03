@@ -2,7 +2,6 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
-import { TokenShop } from '@/components/TokenShop';
 import { AD_FREE_PRICE_RUB } from '@/lib/tokens';
 import { useSettings } from '@/providers/SettingsProvider';
 import { useTokens } from '@/providers/TokensProvider';
@@ -37,8 +36,6 @@ export default function PlansScreen() {
               {adFree ? t.planRenew : t.planBuy}
             </Text>
           </PressableScale>
-
-          <TokenShop />
         </View>
       </ScrollView>
     </ScreenBackdrop>

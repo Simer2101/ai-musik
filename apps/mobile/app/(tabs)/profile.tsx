@@ -6,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AdBanner } from '@/components/AdBanner';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
-import { TokenHint } from '@/components/TokenHint';
 import { TrackCover } from '@/components/ui';
 import { BACKGROUND_IDS, buildColors, type BackgroundId, type ThemeName } from '@/constants/Colors';
 import { api } from '@/lib/api';
@@ -54,7 +53,7 @@ export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
   const { colors, t, language, themeName, background, setLanguage, setThemeName, setBackground } = useSettings();
   const { recents, play } = usePlayer();
-  const { adFree, balance } = useTokens();
+  const { adFree } = useTokens();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mine, setMine] = useState<Track[]>([]);
   const [likes, setLikes] = useState<Track[]>([]);
@@ -143,7 +142,6 @@ export default function ProfileScreen() {
         <Text style={{ color: colors.success, fontWeight: '700', fontSize: 16 }}>
           {t.planBadge.replace('{name}', adFree ? t.planAdFree : t.planWithAds)}
         </Text>
-        <TokenHint tokens={balance} />
         <PressableScale onPress={() => router.push('/plans')} style={[styles.primary, { backgroundColor: colors.accent, marginTop: 4 }]}>
           <Text style={[styles.primaryText, { color: colors.buttonText }]}>
             {adFree ? t.planRenew : t.planBuy}

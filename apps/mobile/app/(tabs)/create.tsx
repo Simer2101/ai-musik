@@ -5,20 +5,17 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AdBanner } from '@/components/AdBanner';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
-import { TokenHint } from '@/components/TokenHint';
 import { PrimaryButton } from '@/components/ui';
 import { api } from '@/lib/api';
 import { DEFAULT_GENRE, GENRES, genreLabel, MAIN_GENRE_COUNT } from '@/lib/wave';
-import { FREE_PLAN, MAX_TRACK_SECONDS, MIN_TRACK_SECONDS, tokensForDuration } from '@/lib/tokens';
+import { MAX_TRACK_SECONDS, MIN_TRACK_SECONDS } from '@/lib/tokens';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSettings } from '@/providers/SettingsProvider';
-import { useTokens } from '@/providers/TokensProvider';
 
 export default function CreateScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { colors, t } = useSettings();
-  const { balance, planId, notice, spend, refund, clearNotice } = useTokens();
   const [prompt, setPrompt] = useState('');
   const [genre, setGenre] = useState(DEFAULT_GENRE);
   const [genresOpen, setGenresOpen] = useState(false);
@@ -38,7 +35,6 @@ export default function CreateScreen() {
     typedSeconds >= MIN_TRACK_SECONDS &&
     typedSeconds <= MAX_TRACK_SECONDS;
   const billedMs = customLength ? (customValid ? typedSeconds * 1000 : 0) : durationMs;
-  const cost = billedMs > 0 ? tokensForDuration(billedMs) : 0;
   const genreSearch = genreQuery.trim().toLowerCase().replaceAll('ё', 'е');
   const visibleGenres = useMemo(() => {
     if (genreSearch) {
@@ -54,7 +50,6 @@ export default function CreateScreen() {
     return main;
   }, [genre, genreSearch, genresOpen]);
   const hiddenGenreCount = GENRES.length - MAIN_GENRE_COUNT;
-  const granted = notice?.startsWith('granted:') ? Number(notice.slice(8)) : 0;
 
   const lengths = [
     { label: `30 ${t.seconds}`, value: 30000 },
@@ -68,21 +63,12 @@ export default function CreateScreen() {
       return;
     }
     if (!billedMs) return;
-    if (balance < cost) {
-      setError(t.notEnoughTokens);
-      return;
-    }
-    if (!spend(cost)) {
-      setError(t.notEnoughTokens);
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
       const { track } = await api.createTrack({ prompt, genre, durationMs: billedMs, instrumental });
       router.push(`/track/${track.id}`);
     } catch (err) {
-      refund(cost);
       setError(err instanceof Error ? err.message : t.createError);
     } finally {
       setBusy(false);
@@ -97,20 +83,6 @@ export default function CreateScreen() {
       <Text style={[styles.heading, { color: colors.text }]}>{t.createTitle}</Text>
       <Text style={{ color: colors.muted }}>{t.createCopy}</Text>
       <AdBanner />
-      {planId === 'free' ? (
-        <Text style={{ color: colors.accent2, fontWeight: '700' }}>
-          {balance >= FREE_PLAN.tokens ? t.freeTrackHint : t.freeTrackUsed}
-        </Text>
-      ) : null}
-      <PressableScale onPress={() => router.push('/plans')} style={[styles.wallet, { backgroundColor: colors.card }]}>
-        <TokenHint tokens={balance} />
-        {granted ? (
-          <Text style={{ color: colors.accent2, fontWeight: '700' }}>
-            {t.tokensGranted.replace('{n}', String(granted))}
-          </Text>
-        ) : null}
-        <Text style={{ color: colors.muted }}>{t.planOpen}</Text>
-      </PressableScale>
       <TextInput
         value={prompt}
         onChangeText={setPrompt}
@@ -167,7 +139,6 @@ export default function CreateScreen() {
               onPress={() => {
                 setCustomLength(false);
                 setDurationMs(item.value);
-                clearNotice();
               }}
               style={[
                 styles.chip,
@@ -179,7 +150,7 @@ export default function CreateScreen() {
                   color: active ? colors.buttonText : colors.muted,
                   fontWeight: active ? '700' : '400',
                 }}>
-                {item.label} · {t.tokensCost.replace('{n}', String(tokensForDuration(item.value)))}
+                {item.label}
               </Text>
             </PressableScale>
           );
@@ -187,7 +158,6 @@ export default function CreateScreen() {
         <PressableScale
           onPress={() => {
             setCustomLength(true);
-            clearNotice();
           }}
           style={[
             styles.chip,
@@ -200,9 +170,6 @@ export default function CreateScreen() {
               fontWeight: customLength ? '700' : '400',
             }}>
             {t.lengthCustom}
-            {customLength && customValid
-              ? ` · ${t.tokensCost.replace('{n}', String(tokensForDuration(typedSeconds * 1000)))}`
-              : ''}
           </Text>
         </PressableScale>
       </View>
@@ -240,16 +207,10 @@ export default function CreateScreen() {
         </Text>
       </PressableScale>
       {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
-      {user && balance < cost ? (
-        <PressableScale onPress={() => router.push('/plans')} style={[styles.wallet, { backgroundColor: colors.card }]}>
-          <Text style={{ color: colors.text, fontWeight: '700' }}>{t.notEnoughTokens}</Text>
-          <Text style={{ color: colors.accent, fontWeight: '800' }}>{t.planNeedCta}</Text>
-        </PressableScale>
-      ) : null}
       <PrimaryButton
         title={busy ? t.generating : user ? t.generate : t.signInToGenerate}
         onPress={submit}
-        disabled={busy || !billedMs || prompt.trim().length < 8 || (Boolean(user) && balance < cost)}
+        disabled={busy || !billedMs || prompt.trim().length < 8}
       />
     </ScrollView>
     </ScreenBackdrop>
@@ -260,7 +221,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 36, gap: 16, paddingBottom: 120, maxWidth: 760, width: '100%', alignSelf: 'center' },
   heading: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6 },
-  wallet: { borderRadius: 18, padding: 16, gap: 8 },
   input: {
     minHeight: 140,
     borderRadius: 18,
