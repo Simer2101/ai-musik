@@ -16,7 +16,9 @@ export type IconName =
   | 'card'
   | 'person'
   | 'chevronLeft'
-  | 'chevronRight';
+  | 'chevronRight'
+  | 'eye'
+  | 'eyeOff';
 
 export function Icon({
   name,
@@ -132,6 +134,21 @@ export function Icon({
 
       {name === 'chevronLeft' ? <Path d="M15 5 8 12l7 7" {...stroke} /> : null}
       {name === 'chevronRight' ? <Path d="M9 5l7 7-7 7" {...stroke} /> : null}
+
+      {name === 'eye' ? (
+        <>
+          <Path d="M2.5 12s3.6-7 9.5-7 9.5 7 9.5 7-3.6 7-9.5 7-9.5-7-9.5-7Z" {...stroke} />
+          <Path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" {...stroke} />
+        </>
+      ) : null}
+
+      {name === 'eyeOff' ? (
+        <>
+          <Path d="M4 5.5 19.5 21" {...stroke} />
+          <Path d="M9.1 8.7A7.4 7.4 0 0 1 12 8c5.9 0 9.5 7 9.5 7a15 15 0 0 1-3.4 3.8" {...stroke} />
+          <Path d="M6.2 6.7A15 15 0 0 0 2.5 12s3.6 7 9.5 7c1.4 0 2.7-.3 3.8-.8" {...stroke} />
+        </>
+      ) : null}
 
       {name === 'person' ? (
         <>
