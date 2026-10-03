@@ -1,6 +1,9 @@
 export type PaidPlanId = 'start' | 'pro' | 'ultra';
 export type PlanId = 'free' | PaidPlanId;
 
+/** Temporary single subscription: removes ads. Payment is not wired. */
+export const AD_FREE_PRICE_RUB = 149;
+
 /** One free 30-second track for accounts that have not bought a plan. */
 export const FREE_PLAN = {
   id: 'free' as const,

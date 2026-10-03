@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AdBanner } from '@/components/AdBanner';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
@@ -72,6 +73,7 @@ export default function LibraryScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={colors.accent} />}>
       <Text style={[styles.heading, { color: colors.text }]}>{t.libraryTitle}</Text>
+      <AdBanner />
       <View style={[styles.tabs, { backgroundColor: colors.card }]}>
         <PressableScale
           onPress={() => setTab('mine')}

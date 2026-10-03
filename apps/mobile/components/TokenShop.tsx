@@ -5,18 +5,15 @@ import { PressableScale } from '@/components/PressableScale';
 import {
   formatMusicFromTokens,
   formatTokenCount,
-  isPaidPlanId,
   MIN_TOPUP_RUB,
   parseTopUpRub,
   tokensForRub,
   tracksFromTokens,
 } from '@/lib/tokens';
 import { useSettings } from '@/providers/SettingsProvider';
-import { useTokens } from '@/providers/TokensProvider';
 
 export function TokenShop() {
   const { colors, t, language } = useSettings();
-  const { planId } = useTokens();
   const locale = language === 'en' ? 'en-US' : 'ru-RU';
   const [raw, setRaw] = useState(String(MIN_TOPUP_RUB));
   const [touched, setTouched] = useState(false);
@@ -26,7 +23,6 @@ export function TokenShop() {
   const empty = raw.trim().length === 0 || parsed === null;
   const rub = empty || belowMin ? MIN_TOPUP_RUB : parsed;
   const tokens = tokensForRub(rub);
-  const canBuy = isPaidPlanId(planId);
   const showMinError = touched && (empty || belowMin);
 
   const time = useMemo(
@@ -96,19 +92,13 @@ export function TokenShop() {
       </View>
 
       <PressableScale
-        disabled={!canBuy}
         onPress={() => undefined}
         scaleTo={0.97}
-        style={[
-          styles.button,
-          { backgroundColor: colors.accent },
-          !canBuy && styles.buttonOff,
-        ]}>
+        style={[styles.button, { backgroundColor: colors.accent }]}>
         <Text style={[styles.buttonText, { color: colors.buttonText }]}>
           {t.calcTopUp.replace('{n}', rub.toLocaleString(locale))}
         </Text>
       </PressableScale>
-      {!canBuy ? <Text style={[styles.gate, { color: colors.muted }]}>{t.calcNeedPlan}</Text> : null}
     </View>
   );
 }
@@ -142,7 +132,5 @@ const styles = StyleSheet.create({
   time: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
   approx: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
   button: { borderRadius: 999, paddingVertical: 11, alignItems: 'center' },
-  buttonOff: { opacity: 0.45 },
   buttonText: { fontWeight: '800', fontSize: 15 },
-  gate: { textAlign: 'center', fontWeight: '600' },
 });

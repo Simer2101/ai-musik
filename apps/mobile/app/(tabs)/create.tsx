@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { AdBanner } from '@/components/AdBanner';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { TokenHint } from '@/components/TokenHint';
@@ -95,6 +96,7 @@ export default function CreateScreen() {
       contentContainerStyle={styles.content}>
       <Text style={[styles.heading, { color: colors.text }]}>{t.createTitle}</Text>
       <Text style={{ color: colors.muted }}>{t.createCopy}</Text>
+      <AdBanner />
       {planId === 'free' ? (
         <Text style={{ color: colors.accent2, fontWeight: '700' }}>
           {balance >= FREE_PLAN.tokens ? t.freeTrackHint : t.freeTrackUsed}

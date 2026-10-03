@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { AdBanner } from '@/components/AdBanner';
 import { HorizontalCarousel } from '@/components/HorizontalCarousel';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
@@ -133,6 +134,7 @@ export default function ListenScreen() {
         {name ? `, ${name}` : ''}
       </Text>
       <Text style={{ color: colors.muted }}>{t.listenCopy}</Text>
+      <AdBanner />
 
       <TextInput
         value={query}

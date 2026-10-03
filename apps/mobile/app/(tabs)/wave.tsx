@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AdBanner } from '@/components/AdBanner';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
@@ -79,6 +80,7 @@ export default function WaveScreen() {
         <Text style={[styles.kicker, { color: colors.accent }]}>{live && radio ? t.waveNow : t.waveTitle}</Text>
         <Text style={[styles.title, { color: colors.text }]}>{t.waveTitle}</Text>
         <Text style={{ color: colors.muted }}>{t.waveSubtitle}</Text>
+        <AdBanner />
 
         <View style={styles.moods}>
           {MOODS.map((item) => {

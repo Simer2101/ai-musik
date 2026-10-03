@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { AdBanner } from '@/components/AdBanner';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { TrackCover } from '@/components/ui';
@@ -102,6 +103,9 @@ export default function TrackScreen() {
           </View>
         ) : null}
       </LinearGradient>
+      <View style={{ paddingHorizontal: desktop ? 0 : 24 }}>
+        <AdBanner />
+      </View>
       <View style={[styles.meta, desktop && { display: 'none' }]}>
         <Text style={[styles.title, { color: colors.text }]}>{trackTitle(track)}</Text>
         <Text style={{ color: colors.muted }}>{track.authorName}</Text>
