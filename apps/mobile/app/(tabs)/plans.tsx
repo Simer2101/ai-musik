@@ -25,15 +25,44 @@ const HERO_COVERS = [
   COVER_ASSETS['demo-rush-house'],
 ];
 
-const PERKS: { icon: IconName; key: 'perkAds' | 'perkDownload' | 'perkWave' | 'perkOrder' | 'perkPause' | 'perkCancel' }[] =
-  [
-    { icon: 'speaker', key: 'perkAds' },
-    { icon: 'download', key: 'perkDownload' },
-    { icon: 'radio', key: 'perkWave' },
-    { icon: 'shuffle', key: 'perkOrder' },
-    { icon: 'headphones', key: 'perkPause' },
-    { icon: 'card', key: 'perkCancel' },
-  ];
+type PerkTileProps = { icon: IconName; title: string; text: string };
+
+// "What Premium gives": one lime headline tile for ad-free listening, plus smaller perk tiles.
+function PerksPanel() {
+  const { colors, t } = useSettings();
+  const tint = `${colors.accent}1f`;
+  const Tile = ({ icon, title, text }: PerkTileProps) => (
+    <View
+      style={[styles.perkTile, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+      <View style={[styles.perkIcon, { backgroundColor: tint }]}>
+        <Icon name={icon} color={colors.accent} size={20} />
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+        <Text style={{ color: colors.text, fontSize: 15, fontWeight: '700' }}>{title}</Text>
+        <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 18 }}>{text}</Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.perkLayout}>
+      <View style={[styles.perkHero, { backgroundColor: colors.accent }]}>
+        <Icon name="speaker" color={colors.buttonText} size={36} />
+        <View style={{ gap: 8 }}>
+          <Text style={[fonts.display('800'), { color: colors.buttonText, fontSize: 22, lineHeight: 26, letterSpacing: -0.4 }]}>
+            {t.perkAdsTitle}
+          </Text>
+          <Text style={{ color: colors.buttonText, fontSize: 14, lineHeight: 20, fontWeight: '500' }}>{t.perkAdsText}</Text>
+        </View>
+      </View>
+      <View style={styles.perkSide}>
+        <Tile icon="download" title={t.perkDownloadTitle} text={t.perkDownloadText} />
+        <Tile icon="shuffle" title={t.perkOrderTitle} text={t.perkOrderText} />
+        <Tile icon="card" title={t.perkCancelTitle} text={t.perkCancelText} />
+      </View>
+    </View>
+  );
+}
 
 export default function PlansScreen() {
   const { colors, t, language, themeName } = useSettings();
@@ -42,7 +71,7 @@ export default function PlansScreen() {
   const price = t.planPerMonth.replace('{price}', AD_FREE_PRICE_RUB.toLocaleString(locale));
   const cta = adFree ? t.planRenew : t.plansStart;
   const lightCta = themeName === 'dark';
-  const bullets = [t.planBulletAds, t.planBulletDownload, t.planBulletAccount, t.planBulletCancel];
+  const bullets = [t.planBulletAds, t.planBulletDownload, t.planBulletCancel];
   const desktop = useDesktop();
 
   if (desktop) {
@@ -109,16 +138,7 @@ export default function PlansScreen() {
 
             <View style={[styles.card, styles.widePerks, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[fonts.display('700'), { color: colors.text, fontSize: 22 }]}>{t.plansPerksTitle}</Text>
-              <View style={styles.perkGrid}>
-                {PERKS.map((item) => (
-                  <View key={item.key} style={[styles.perkTile, { backgroundColor: colors.cardAlt }]}>
-                    <View style={[styles.perkIcon, { backgroundColor: colors.bg }]}>
-                      <Icon name={item.icon} color={colors.accent} size={22} />
-                    </View>
-                    <Text style={[styles.perkText, { color: colors.text }]}>{t[item.key]}</Text>
-                  </View>
-                ))}
-              </View>
+              <PerksPanel />
             </View>
           </View>
         </ScrollView>
@@ -175,14 +195,8 @@ export default function PlansScreen() {
             </View>
 
             <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.perksTitle, { color: colors.text }]}>{t.plansPerksTitle}</Text>
-              <View style={[styles.perkLine, { backgroundColor: colors.border }]} />
-              {PERKS.map((item) => (
-                <View key={item.key} style={styles.perk}>
-                  <Icon name={item.icon} color={colors.text} size={22} />
-                  <Text style={[styles.perkText, { color: colors.text }]}>{t[item.key]}</Text>
-                </View>
-              ))}
+              <Text style={[fonts.display('700'), { color: colors.text, fontSize: 20 }]}>{t.plansPerksTitle}</Text>
+              <PerksPanel />
             </View>
           </View>
         </View>
@@ -223,10 +237,7 @@ const styles = StyleSheet.create({
   price: { fontSize: 15, fontWeight: '600' },
   bullets: { gap: 8, paddingVertical: 4 },
   bullet: { fontSize: 15, lineHeight: 22 },
-  perksTitle: { fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   perkLine: { height: 1, marginBottom: 4 },
-  perk: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 8 },
-  perkText: { flex: 1, fontSize: 16, fontWeight: '600', lineHeight: 22 },
   wideContent: { paddingBottom: 40 },
   wideHero: { height: 420, overflow: 'hidden', justifyContent: 'flex-end' },
   wideMosaic: {
@@ -261,15 +272,25 @@ const styles = StyleSheet.create({
   widePerks: { flexGrow: 2, flexShrink: 1, flexBasis: 520, borderWidth: 1, borderRadius: 24, padding: 28, gap: 20 },
   check: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  perkGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  perkTile: {
+  perkLayout: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  perkHero: {
     flexGrow: 1,
-    flexBasis: 220,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    borderRadius: 16,
-    padding: 14,
+    flexShrink: 1,
+    flexBasis: 190,
+    minHeight: 220,
+    borderRadius: 22,
+    padding: 24,
+    justifyContent: 'space-between',
+    gap: 24,
   },
-  perkIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  perkSide: { flexGrow: 2, flexShrink: 1, flexBasis: 280, gap: 12 },
+  perkTile: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 18,
+  },
+  perkIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 });
