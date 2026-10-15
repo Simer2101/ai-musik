@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
+import { Text, TextInput } from '@/components/AppText';
 
 import { AdBanner } from '@/components/AdBanner';
 import { PressableScale } from '@/components/PressableScale';

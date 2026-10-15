@@ -18,32 +18,32 @@ export type ThemeColors = {
 
 export const palettes: Record<ThemeName, ThemeColors> = {
   dark: {
-    bg: '#09090f',
-    card: '#14141c',
-    cardAlt: '#1c1c28',
-    text: '#f4f4f8',
-    muted: '#9b9baf',
-    accent: '#8b7cff',
-    accent2: '#3ee0c0',
+    bg: '#0b0b0d',
+    card: '#16161a',
+    cardAlt: '#1d1d22',
+    text: '#f3f3f0',
+    muted: '#8e8e96',
+    accent: '#c6f432',
+    accent2: '#c6f432',
     danger: '#ff6b81',
-    border: '#262636',
-    success: '#3ee0c0',
-    buttonText: '#09090f',
-    hero: '#14121f',
+    border: '#232328',
+    success: '#c6f432',
+    buttonText: '#0b0b0d',
+    hero: '#121215',
   },
   light: {
-    bg: '#f6f5fb',
+    bg: '#f4f4f1',
     card: '#ffffff',
-    cardAlt: '#eceaf6',
-    text: '#12121a',
-    muted: '#6b6b7d',
-    accent: '#6d5efc',
-    accent2: '#0f9f86',
+    cardAlt: '#e9e9e4',
+    text: '#111113',
+    muted: '#62626a',
+    accent: '#3f6212',
+    accent2: '#3f6212',
     danger: '#be123c',
-    border: '#e4e2ef',
-    success: '#0f9f86',
+    border: '#e1e1db',
+    success: '#3f6212',
     buttonText: '#ffffff',
-    hero: '#ece8fa',
+    hero: '#ebebe6',
   },
 };
 
@@ -52,8 +52,8 @@ type Surface = Pick<ThemeColors, 'bg' | 'card' | 'cardAlt' | 'border' | 'hero'>;
 // Surfaces only retune the backgrounds; text and accents stay the same in every variant.
 const SURFACES: Record<BackgroundId, Record<ThemeName, Surface>> = {
   classic: {
-    dark: { bg: '#09090f', card: '#14141c', cardAlt: '#1c1c28', border: '#262636', hero: '#14121f' },
-    light: { bg: '#f6f5fb', card: '#ffffff', cardAlt: '#eceaf6', border: '#e4e2ef', hero: '#ece8fa' },
+    dark: { bg: '#0b0b0d', card: '#16161a', cardAlt: '#1d1d22', border: '#232328', hero: '#121215' },
+    light: { bg: '#f4f4f1', card: '#ffffff', cardAlt: '#e9e9e4', border: '#e1e1db', hero: '#ebebe6' },
   },
   graphite: {
     dark: { bg: '#101014', card: '#1a1a20', cardAlt: '#24242c', border: '#2e2e38', hero: '#1a1a22' },

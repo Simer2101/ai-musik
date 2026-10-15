@@ -1,19 +1,21 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AdBanner } from '@/components/AdBanner';
+import { Text, TextInput } from '@/components/AppText';
 import { HorizontalCarousel } from '@/components/HorizontalCarousel';
+import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { SectionTitle, TrackCover, TrackRow } from '@/components/ui';
+import { fonts } from '@/constants/Fonts';
 import { api } from '@/lib/api';
-import { coverColors, trackTitle } from '@/lib/cover';
+import { formatClock, trackTitle } from '@/lib/cover';
 import { demoApi } from '@/lib/demo';
 import { useDesktop } from '@/lib/layout';
 import type { Track } from '@/lib/types';
-import { filterByMood, filterByNeedles, GENRES, genreLabel, greetingKey, searchTracks, type Mood } from '@/lib/wave';
+import { filterByNeedles, GENRES, genreLabel, searchTracks, type Mood } from '@/lib/wave';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
@@ -23,55 +25,117 @@ const STYLES = GENRES.map((item) => ({
   needles: item.needles,
 }));
 
-function StyleChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+const HERO_MOODS: { id: Mood; key: 'moodEnergy' | 'moodCalm' | 'moodFocus' | 'moodNight' }[] = [
+  { id: 'energy', key: 'moodEnergy' },
+  { id: 'calm', key: 'moodCalm' },
+  { id: 'focus', key: 'moodFocus' },
+  { id: 'night', key: 'moodNight' },
+];
+
+// Decorative bar heights for the wave card; the first part is lit to suggest playback.
+const BARS = [10, 18, 26, 14, 30, 22, 34, 16, 24, 36, 20, 12, 28, 32, 18, 26, 10, 22, 34, 30, 14, 24, 18, 36, 28, 12, 20, 30, 16, 26, 34, 22, 10, 18, 28, 24, 14, 32, 20, 12];
+
+function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const { colors } = useSettings();
   return (
     <PressableScale
       onPress={onPress}
       style={[
         styles.chip,
-        { backgroundColor: colors.card, borderColor: colors.border },
-        active && { backgroundColor: colors.accent, borderColor: colors.accent },
+        { borderColor: colors.border },
+        active && { backgroundColor: colors.text, borderColor: colors.text },
       ]}>
-      <Text
-        style={{
-          color: active ? colors.buttonText : colors.muted,
-          fontWeight: active ? '800' : '600',
-          fontSize: 13,
-        }}>
+      <Text style={{ color: active ? colors.bg : colors.text, fontWeight: active ? '600' : '500', fontSize: 14 }}>
         {label}
       </Text>
     </PressableScale>
   );
 }
 
-function Shelf({
-  desktop,
-  title,
-  tracks,
-  onPlay,
-}: {
-  desktop: boolean;
-  title: string;
-  tracks: Track[];
-  onPlay: (track: Track, list: Track[]) => void;
-}) {
-  const { colors } = useSettings();
-  if (!tracks.length) return null;
-  return (
-    <HorizontalCarousel title={title}>
-      {tracks.slice(0, desktop ? 10 : 8).map((item) => (
-        <PressableScale key={item.id} onPress={() => onPlay(item, tracks)} style={styles.shelfCard} scaleTo={0.97}>
-          <TrackCover track={item} size={desktop ? 168 : 148} radius={14} />
-          <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '700', marginTop: 8 }}>
-            {trackTitle(item)}
-          </Text>
-          <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12 }}>
-            {item.authorName}
-          </Text>
-        </PressableScale>
+function WaveCard({ desktop, onStart, onMood }: { desktop: boolean; onStart: () => void; onMood: (mood: Mood) => void }) {
+  const { colors, t } = useSettings();
+  const scale = desktop ? 2.6 : 1;
+  const play = desktop ? 96 : 72;
+  const bars = (
+    <View style={[styles.bars, desktop && { flex: 1 }, { height: 36 * scale, gap: desktop ? 4 : 3 }]} pointerEvents="none">
+      {BARS.map((height, index) => (
+        <View
+          key={index}
+          style={{
+            flex: 1,
+            height: height * scale,
+            borderRadius: desktop ? 3 : 2,
+            backgroundColor: index < 16 ? colors.accent : colors.border,
+          }}
+        />
       ))}
-    </HorizontalCarousel>
+    </View>
+  );
+  const button = (
+    <PressableScale
+      onPress={onStart}
+      accessibilityLabel={t.waveStart}
+      scaleTo={0.92}
+      style={[styles.play, { width: play, height: play, borderRadius: play / 2, backgroundColor: colors.accent }]}>
+      <Icon name="play" color={colors.buttonText} size={desktop ? 38 : 28} />
+    </PressableScale>
+  );
+
+  return (
+    <View
+      style={[
+        styles.wave,
+        desktop && styles.waveDesktop,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}>
+      <View style={[styles.waveText, desktop && { flexBasis: 320 }]}>
+        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: desktop ? 12 : 11, letterSpacing: 1.6 }}>
+          {t.listenKicker}
+        </Text>
+        <Text style={[fonts.display('700'), { color: colors.text, fontSize: desktop ? 44 : 26, lineHeight: desktop ? 48 : 29, letterSpacing: -0.6, maxWidth: desktop ? undefined : 180 }]}>
+          {t.waveTitle}
+        </Text>
+        <Text style={{ color: colors.muted, fontSize: desktop ? 16 : 13, lineHeight: desktop ? 24 : 18, maxWidth: desktop ? 420 : 200 }}>
+          {desktop ? t.waveSubtitle : t.waveShort}
+        </Text>
+        {desktop ? (
+          <View style={styles.moods}>
+            {HERO_MOODS.map((mood, index) => (
+              <Chip key={mood.id} label={t[mood.key]} active={index === 0} onPress={() => onMood(mood.id)} />
+            ))}
+          </View>
+        ) : null}
+      </View>
+      {desktop ? (
+        <View style={styles.waveRight}>
+          {bars}
+          {button}
+        </View>
+      ) : (
+        <View style={{ position: 'absolute', top: 20, right: 20 }}>{button}</View>
+      )}
+      {desktop ? null : bars}
+    </View>
+  );
+}
+
+function PopularRow({ track, rank, onPress }: { track: Track; rank: number; onPress: () => void }) {
+  const { colors, t } = useSettings();
+  return (
+    <PressableScale onPress={onPress} scaleTo={0.985} style={[styles.popular, { borderBottomColor: colors.border }]}>
+      <Text style={[fonts.display('500'), { width: 24, color: colors.muted, fontSize: 14 }]}>{rank}</Text>
+      <TrackCover track={track} size={48} radius={12} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>
+          {trackTitle(track)}
+        </Text>
+        <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12 }}>
+          {track.authorName}
+          {track.genre ? ` · ${genreLabel(track.genre, t)}` : ''}
+        </Text>
+      </View>
+      <Text style={{ color: colors.muted, fontSize: 12 }}>{formatClock(track.durationMs)}</Text>
+    </PressableScale>
   );
 }
 
@@ -84,6 +148,7 @@ export default function ListenScreen() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [liked, setLiked] = useState<Track[]>([]);
   const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [style, setStyle] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -115,161 +180,228 @@ export default function ListenScreen() {
   const styleTracks = activeStyle ? activeStyle.list : tracks;
   const visible = useMemo(() => searchTracks(styleTracks, query), [query, styleTracks]);
   const browsing = Boolean(activeStyle) || query.trim().length > 0;
-  const genres = useMemo(
-    () => GENRES.map((item) => item.value).filter((value) => tracks.some((track) => track.genre === value)),
-    [tracks]
+  const popular = useMemo(
+    () =>
+      [...tracks]
+        .sort((a, b) => (b.playCount ?? 0) + b.likeCount - ((a.playCount ?? 0) + a.likeCount))
+        .slice(0, desktop ? 8 : 5),
+    [desktop, tracks]
   );
-  const name = user?.user_metadata?.display_name ?? user?.email?.split('@')[0] ?? '';
-  const hello = t[greetingKey()];
+  const name: string = user?.user_metadata?.display_name ?? user?.email?.split('@')[0] ?? '';
+  const initial = (name || 'A').slice(0, 1).toUpperCase();
+  const openTrack = (item: Track) => router.push(`/track/${item.id}`);
 
-  return (
-    <ScreenBackdrop>
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.content, desktop && styles.contentDesktop]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={colors.accent} />}>
-      <Text style={{ color: colors.accent, fontWeight: '800', fontSize: 11, letterSpacing: 1.2 }}>{t.listenKicker}</Text>
-      <Text style={[styles.heading, { color: colors.text }]}>
-        {hello}
-        {name ? `, ${name}` : ''}
-      </Text>
-      <Text style={{ color: colors.muted }}>{t.listenCopy}</Text>
-      <AdBanner />
-
+  const searchField = (
+    <View style={[styles.search, desktop && styles.searchDesktop, { backgroundColor: colors.cardAlt }]}>
+      <Icon name="search" color={colors.muted} size={20} />
       <TextInput
         value={query}
         onChangeText={setQuery}
+        autoFocus={!desktop && searchOpen}
         placeholder={t.searchPlaceholder}
         placeholderTextColor={colors.muted}
-        style={[styles.search, { backgroundColor: colors.card, color: colors.text }]}
+        accessibilityLabel={t.search}
+        style={[styles.searchInput, { color: colors.text }]}
       />
+    </View>
+  );
+  const avatar = (
+    <PressableScale
+      onPress={() => router.push('/profile')}
+      accessibilityLabel={t.tabProfile}
+      style={[styles.round, { backgroundColor: colors.border }]}>
+      <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15 }}>{initial}</Text>
+    </PressableScale>
+  );
 
-      <HorizontalCarousel>
-        <StyleChip label={t.styleAll} active={!activeStyle} onPress={() => setStyle('all')} />
-        {availableStyles.map((item) => (
-          <StyleChip
-            key={item.id}
-            label={genreLabel(item.id, t)}
-            active={activeStyle?.id === item.id}
-            onPress={() => setStyle(activeStyle?.id === item.id ? 'all' : item.id)}
-          />
-        ))}
-      </HorizontalCarousel>
-
-      {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
-      {!visible.length && !error ? (
-        <Text style={{ color: colors.muted }}>{query ? t.searchEmpty : t.catalogEmpty}</Text>
-      ) : null}
-
-      {browsing ? (
-        <View style={{ gap: 4 }}>
-          {visible.length ? (
-            <View style={styles.rowBetween}>
-              <SectionTitle>{activeStyle ? genreLabel(activeStyle.id, t) : t.stylesTitle}</SectionTitle>
-              <PressableScale onPress={() => void play(visible[0], visible, { radio: true })} scaleTo={0.96}>
-                <Text style={{ color: colors.accent2, fontWeight: '700' }}>{t.playAll}</Text>
+  return (
+    <ScreenBackdrop>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={[styles.content, desktop && styles.contentDesktop]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={colors.accent} />}>
+        {desktop ? (
+          <View style={styles.header}>
+            {searchField}
+            <View style={styles.headerRight}>
+              <PressableScale
+                onPress={() => router.push('/publish')}
+                style={[styles.outline, { borderColor: colors.border }]}>
+                <Icon name="plus" color={colors.text} size={18} />
+                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>{t.publishTitle}</Text>
               </PressableScale>
+              {avatar}
             </View>
-          ) : null}
-          {visible.map((item) => (
-            <TrackRow
+          </View>
+        ) : (
+          <>
+            <View style={styles.header}>
+              <Text style={[fonts.display('800'), { color: colors.text, fontSize: 22, letterSpacing: -0.4 }]}>
+                AI<Text style={[fonts.display('800'), { color: colors.accent }]}>musik</Text>
+              </Text>
+              <View style={styles.headerRight}>
+                <PressableScale
+                  onPress={() => setSearchOpen((open) => !open)}
+                  accessibilityLabel={t.search}
+                  style={[styles.round, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+                  <Icon name="search" color={colors.text} size={20} />
+                </PressableScale>
+                {avatar}
+              </View>
+            </View>
+            {searchOpen || query ? searchField : null}
+          </>
+        )}
+
+        {browsing ? null : (
+          <WaveCard
+            desktop={desktop}
+            onStart={() => router.push('/wave')}
+            onMood={(mood) => router.push(`/wave?mood=${mood}`)}
+          />
+        )}
+
+        <HorizontalCarousel>
+          <Chip label={t.styleAll} active={!activeStyle} onPress={() => setStyle('all')} />
+          {availableStyles.map((item) => (
+            <Chip
               key={item.id}
-              track={item}
-              onPress={() => router.push(`/track/${item.id}`)}
+              label={genreLabel(item.id, t)}
+              active={activeStyle?.id === item.id}
+              onPress={() => setStyle(activeStyle?.id === item.id ? 'all' : item.id)}
             />
           ))}
-        </View>
-      ) : (
-        <>
-          <View style={styles.mixes}>
-            {[
-              { title: t.dailyMix, mood: 'energy' as Mood, list: filterByMood(tracks, 'energy') },
-              { title: t.nightMix, mood: 'night' as Mood, list: filterByMood(tracks, 'night') },
-              { title: t.focusMix, mood: 'focus' as Mood, list: filterByMood(tracks, 'focus') },
-              { title: t.classicMix, mood: 'calm' as Mood, list: filterByNeedles(tracks, GENRES.find((item) => item.id === 'classical')?.needles ?? ['классика']) },
-            ].map((mix) => {
-              const [from, to] = coverColors(mix.title);
-              return (
-                <PressableScale
-                  key={mix.title}
-                  onPress={() => router.push(`/wave?mood=${mix.mood}`)}
-                  style={styles.mixCard}
-                  scaleTo={0.98}>
-                  <LinearGradient colors={[from, to]} style={styles.mixGrad}>
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>{mix.title}</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{mix.list.length} {t.statsTracks}</Text>
-                  </LinearGradient>
-                </PressableScale>
-              );
-            })}
-          </View>
+        </HorizontalCarousel>
 
-          <Shelf desktop={desktop} title={t.newInApp} tracks={tracks} onPlay={(item) => router.push(`/track/${item.id}`)} />
-          {liked.length ? (
-            <Shelf desktop={desktop} title={t.becauseYouLiked} tracks={liked} onPlay={(item) => router.push(`/track/${item.id}`)} />
-          ) : null}
-          {recents.length ? (
-            <Shelf desktop={desktop} title={t.recentlyPlayed} tracks={recents} onPlay={(item) => router.push(`/track/${item.id}`)} />
-          ) : null}
+        {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
+        {!visible.length && !error ? (
+          <Text style={{ color: colors.muted }}>{query ? t.searchEmpty : t.catalogEmpty}</Text>
+        ) : null}
 
-          {genres.length ? (
-            <HorizontalCarousel title={t.genreMixes}>
-              {genres.map((genre) => {
-                const mix = tracks.filter((item) => item.genre === genre);
-                return (
-                  <PressableScale
-                    key={genre}
-                    onPress={() => {
-                      const match = GENRES.find((item) => item.value === genre);
-                      setStyle(match?.id ?? 'all');
-                    }}
-                    style={styles.genreCard}
-                    scaleTo={0.97}>
-                    <TrackCover track={mix[0] ?? tracks[0]} size={148} radius={14} />
-                    <Text style={{ color: colors.text, fontWeight: '700', marginTop: 8 }}>{genreLabel(genre, t)}</Text>
-                  </PressableScale>
-                );
-              })}
-            </HorizontalCarousel>
-          ) : null}
-
-          {tracks.length ? (
-            <View style={{ gap: 4 }}>
+        {browsing ? (
+          <View style={{ gap: 4 }}>
+            {visible.length ? (
               <View style={styles.rowBetween}>
-                <SectionTitle>{t.madeForYou}</SectionTitle>
-                <PressableScale onPress={() => void play(tracks[0], tracks)} scaleTo={0.96}>
-                  <Text style={{ color: colors.accent2, fontWeight: '700' }}>{t.playAll}</Text>
+                <SectionTitle>{activeStyle ? genreLabel(activeStyle.id, t) : t.stylesTitle}</SectionTitle>
+                <PressableScale onPress={() => void play(visible[0], visible, { radio: true })} scaleTo={0.96}>
+                  <Text style={{ color: colors.accent, fontWeight: '600' }}>{t.playAll}</Text>
                 </PressableScale>
               </View>
-              {tracks.slice(0, 8).map((item) => (
-                <TrackRow
-                  key={item.id}
-                  track={item}
-                  onPress={() => router.push(`/track/${item.id}`)}
-                />
-              ))}
-            </View>
-          ) : null}
-        </>
-      )}
-    </ScrollView>
+            ) : null}
+            {visible.map((item) => (
+              <TrackRow key={item.id} track={item} onPress={() => openTrack(item)} />
+            ))}
+          </View>
+        ) : (
+          <>
+            {tracks.length ? (
+              <HorizontalCarousel title={t.newReleases}>
+                {tracks.slice(0, desktop ? 12 : 8).map((item) => (
+                  <PressableScale
+                    key={item.id}
+                    onPress={() => openTrack(item)}
+                    style={{ width: desktop ? 168 : 128 }}
+                    scaleTo={0.97}>
+                    <TrackCover track={item} size={desktop ? 168 : 128} radius={18} />
+                    <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', fontSize: desktop ? 15 : 14, marginTop: 8 }}>
+                      {trackTitle(item)}
+                    </Text>
+                    <Text numberOfLines={1} style={{ color: colors.muted, fontSize: desktop ? 13 : 12 }}>
+                      {item.authorName}
+                      {item.genre ? ` · ${genreLabel(item.genre, t)}` : ''}
+                    </Text>
+                  </PressableScale>
+                ))}
+              </HorizontalCarousel>
+            ) : null}
+
+            {popular.length ? (
+              <View style={{ gap: 6 }}>
+                <View style={styles.rowBetween}>
+                  <SectionTitle>{t.popularTitle}</SectionTitle>
+                  <PressableScale onPress={() => void play(popular[0], popular)} scaleTo={0.96}>
+                    <Text style={{ color: colors.accent, fontWeight: '600' }}>{t.playAll}</Text>
+                  </PressableScale>
+                </View>
+                <View style={desktop ? styles.popularGrid : undefined}>
+                  {popular.map((item, index) => (
+                    <View key={item.id} style={desktop ? styles.popularCell : undefined}>
+                      <PopularRow track={item} rank={index + 1} onPress={() => openTrack(item)} />
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
+            <AdBanner />
+
+            {liked.length ? (
+              <HorizontalCarousel title={t.becauseYouLiked}>
+                {liked.slice(0, 8).map((item) => (
+                  <PressableScale key={item.id} onPress={() => openTrack(item)} style={{ width: 128 }} scaleTo={0.97}>
+                    <TrackCover track={item} size={128} radius={18} />
+                    <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', marginTop: 8 }}>
+                      {trackTitle(item)}
+                    </Text>
+                  </PressableScale>
+                ))}
+              </HorizontalCarousel>
+            ) : null}
+            {recents.length ? (
+              <HorizontalCarousel title={t.recentlyPlayed}>
+                {recents.slice(0, 8).map((item) => (
+                  <PressableScale key={item.id} onPress={() => openTrack(item)} style={{ width: 128 }} scaleTo={0.97}>
+                    <TrackCover track={item} size={128} radius={18} />
+                    <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', marginTop: 8 }}>
+                      {trackTitle(item)}
+                    </Text>
+                  </PressableScale>
+                ))}
+              </HorizontalCarousel>
+            ) : null}
+          </>
+        )}
+      </ScrollView>
     </ScreenBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { padding: 20, gap: 16, paddingBottom: 120 },
-  contentDesktop: { padding: 36, maxWidth: 1100, width: '100%', alignSelf: 'center' },
-  heading: { fontSize: 32, fontWeight: '800', letterSpacing: -0.8 },
-  search: { borderRadius: 16, paddingHorizontal: 16, paddingVertical: 13, fontSize: 16 },
-  chips: { gap: 8, paddingRight: 8 },
-  chip: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1 },
-  mixes: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  mixCard: { flexGrow: 1, minWidth: 180, borderRadius: 18, overflow: 'hidden' },
-  mixGrad: { padding: 18, minHeight: 100, justifyContent: 'flex-end', gap: 4 },
-  shelf: { gap: 12 },
-  shelfCard: { width: 168 },
-  genreCard: { width: 148 },
+  content: { padding: 20, gap: 22, paddingBottom: 120 },
+  contentDesktop: { paddingHorizontal: 32, paddingTop: 24, paddingBottom: 40, gap: 32, maxWidth: 1240, width: '100%', alignSelf: 'center' },
+  header: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  round: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  outline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    borderWidth: 1,
+  },
+  search: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    height: 48,
+    paddingHorizontal: 18,
+    borderRadius: 24,
+  },
+  searchDesktop: { flexGrow: 0, flexShrink: 1, flexBasis: 420 },
+  searchInput: { flex: 1, minWidth: 0, fontSize: 15, outlineStyle: 'none' } as never,
+  chip: { borderRadius: 999, paddingHorizontal: 16, height: 36, justifyContent: 'center', borderWidth: 1 },
+  wave: { borderRadius: 28, borderWidth: 1, padding: 20, gap: 16 },
+  waveDesktop: { padding: 32, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 32 },
+  waveText: { flexGrow: 1, flexShrink: 1, gap: 8 },
+  waveRight: { flexGrow: 1, flexShrink: 1, flexBasis: 360, flexDirection: 'row', alignItems: 'center', gap: 24 },
+  bars: { flexDirection: 'row', alignItems: 'center' },
+  play: { alignItems: 'center', justifyContent: 'center' },
+  moods: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  popular: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
+  popularGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 32 },
+  popularCell: { flexGrow: 1, flexBasis: 360, minWidth: 0 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

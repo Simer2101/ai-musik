@@ -1,4 +1,4 @@
-import type { ImageSourcePropType } from 'react-native';
+import { Image, type ImageSourcePropType } from 'react-native';
 
 import type { Track } from './types';
 
@@ -23,31 +23,20 @@ export const COVER_ASSETS: Record<string, ImageSourcePropType> = {
 };
 
 export const AVATAR_DEMO = require('../assets/covers/avatar-demo.png');
-export const AVATAR_URI = '/assets/?unstable_path=.%2Fassets%2Fcovers/avatar-demo.png';
 
-const COVER_FILES: Record<string, string> = {
-  'demo-night-drive': 'cover-night-drive.png',
-  'demo-rain-lofi': 'cover-rain-lofi.png',
-  'demo-orbit-house': 'cover-orbit-house.png',
-  'demo-forest-ambient': 'cover-forest.png',
-  'demo-neon-rock': 'cover-neon-rock.png',
-  'demo-city-hop': 'cover-city-hop.png',
-  'demo-cinema-dawn': 'cover-cinema-dawn.png',
-  'demo-soft-focus': 'cover-soft-focus.png',
-  'demo-velvet-sad': 'cover-velvet.png',
-  'demo-rush-house': 'cover-rush.png',
-  'demo-afterglow': 'cover-afterglow.png',
-  'demo-asphalt-96': 'cover-city-hop.png',
-  'demo-city-thunder': 'cover-neon-rock.png',
-  'demo-black-smoke': 'cover-velvet.png',
-  'demo-late-cipher': 'cover-rush.png',
-  'demo-last-string': 'cover-soft-focus.png',
-  'demo-nocturne-c': 'cover-forest.png',
-};
+// Bundled images resolve to a real URL in both the dev server and an exported web build.
+function assetUri(source: ImageSourcePropType | string): string | null {
+  if (typeof source === 'string') return source;
+  if (typeof source === 'number') return Image.resolveAssetSource(source)?.uri ?? null;
+  if (source && !Array.isArray(source) && 'uri' in source) return source.uri ?? null;
+  return null;
+}
+
+export const AVATAR_URI = assetUri(AVATAR_DEMO) ?? undefined;
 
 export function coverUri(track: Track) {
-  const file = COVER_FILES[track.id];
-  if (file) return `/assets/?unstable_path=.%2Fassets%2Fcovers/${file}`;
+  const asset = COVER_ASSETS[track.id];
+  if (asset) return assetUri(asset);
   return track.coverUrl;
 }
 

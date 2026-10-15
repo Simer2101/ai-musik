@@ -1,6 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
+import { Text } from '@/components/AppText';
 
 import { AdBanner } from '@/components/AdBanner';
 import { Icon } from '@/components/Icon';

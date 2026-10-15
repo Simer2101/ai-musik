@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -6,6 +7,7 @@ import { View } from 'react-native';
 import 'react-native-reanimated';
 
 import { MiniPlayer } from '@/components/MiniPlayer';
+import { FONT_FILES } from '@/constants/Fonts';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { PlayerProvider } from '@/providers/PlayerProvider';
 import { SettingsProvider, useSettings } from '@/providers/SettingsProvider';
@@ -20,9 +22,14 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts(FONT_FILES);
+  const ready = fontsLoaded || Boolean(fontError);
+
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
     <SettingsProvider>
@@ -59,6 +66,8 @@ function ThemedNavigation() {
           screenOptions={{
             headerStyle: { backgroundColor: colors.bg },
             headerTintColor: colors.text,
+            headerTitleStyle: { fontFamily: 'Onest_700Bold' },
+            headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.bg },
           }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

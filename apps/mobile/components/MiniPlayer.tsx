@@ -1,11 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { Text } from '@/components/AppText';
 import { usePathname, useRouter } from 'expo-router';
 
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { Waveform } from '@/components/Waveform';
 import { formatClock, trackTitle } from '@/lib/cover';
-import { PLAYER_HEIGHT, SIDEBAR_WIDTH, useDesktop } from '@/lib/layout';
+import { PLAYER_HEIGHT, useDesktop } from '@/lib/layout';
 import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
 import { TrackCover } from '@/components/ui';
@@ -14,9 +16,6 @@ export function MiniPlayer() {
   const router = useRouter();
   const pathname = usePathname();
   const desktop = useDesktop();
-  const onTabs =
-    pathname === '/' ||
-    ['/wave', '/publish', '/library', '/profile', '/plans'].some((path) => pathname.startsWith(path));
   const { colors } = useSettings();
   const { track, isPlaying, positionMs, durationMs, toggle, next, prev, seek } = usePlayer();
   if (!track || pathname.startsWith('/track/') || pathname.startsWith('/wave')) return null;
@@ -29,19 +28,17 @@ export function MiniPlayer() {
         style={[
           styles.desktop,
           {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
-            paddingLeft: onTabs ? SIDEBAR_WIDTH + 16 : 16,
+            backgroundColor: colors.cardAlt,
             pointerEvents: 'auto',
           },
         ]}>
         <PressableScale style={styles.desktopLeft} onPress={() => router.push(`/track/${track.id}`)} scaleTo={0.99}>
-          <TrackCover track={track} size={56} radius={10} />
+          <TrackCover track={track} size={52} radius={12} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '700' }}>
+            <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>
               {trackTitle(track)}
             </Text>
-            <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12 }}>
+            <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 13 }}>
               {track.authorName}
             </Text>
           </View>
@@ -85,17 +82,17 @@ export function MiniPlayer() {
         scaleTo={0.99}>
         <View style={[styles.progress, { width: `${progress * 100}%`, backgroundColor: colors.accent2 }]} />
         <View style={styles.row}>
-          <TrackCover track={track} size={40} radius={10} />
+          <TrackCover track={track} size={44} radius={12} />
           <View style={styles.body}>
-            <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+            <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>
               {trackTitle(track)}
             </Text>
-            <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 11 }}>
+            <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 12 }}>
               {track.authorName} · {formatClock(positionMs)}
             </Text>
           </View>
-          <PressableScale onPress={toggle} hitSlop={10} style={[styles.play, { backgroundColor: colors.text }]} scaleTo={0.88}>
-            <Icon name={isPlaying ? 'pause' : 'play'} color={colors.bg} size={16} />
+          <PressableScale onPress={toggle} hitSlop={10} style={[styles.play, { backgroundColor: colors.accent }]} scaleTo={0.88}>
+            <Icon name={isPlaying ? 'pause' : 'play'} color={colors.buttonText} size={18} />
           </PressableScale>
           <PressableScale onPress={() => void next()} hitSlop={10} scaleTo={0.88}>
             <Icon name="next" color={colors.text} size={20} />
@@ -109,11 +106,12 @@ export function MiniPlayer() {
 const styles = StyleSheet.create({
   desktop: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    left: 8,
+    right: 8,
+    bottom: 8,
     height: PLAYER_HEIGHT,
-    borderTopWidth: 1,
+    borderRadius: 20,
+    paddingLeft: 14,
     zIndex: 30,
     flexDirection: 'row',
     alignItems: 'center',
@@ -139,22 +137,21 @@ const styles = StyleSheet.create({
   desktopControls: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   desktopWave: { width: '100%', maxWidth: 560, flexDirection: 'row', alignItems: 'center', gap: 8 },
   playLg: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 6px 16px rgba(139, 124, 255, 0.35)',
   },
   outer: {
     position: 'absolute',
-    left: 8,
-    right: 8,
-    bottom: 64,
+    left: 10,
+    right: 10,
+    bottom: 80,
     zIndex: 20,
   },
   wrap: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   progress: {
@@ -164,14 +161,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 8,
+    paddingLeft: 8,
+    paddingRight: 12,
     paddingVertical: 8,
   },
   body: { flex: 1 },
   play: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

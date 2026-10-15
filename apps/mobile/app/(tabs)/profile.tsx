@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
+
+import { Text } from '@/components/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { AdBanner } from '@/components/AdBanner';

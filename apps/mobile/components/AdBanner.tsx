@@ -1,5 +1,7 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { Text } from '@/components/AppText';
 
 import { PressableScale } from '@/components/PressableScale';
 import { useSettings } from '@/providers/SettingsProvider';

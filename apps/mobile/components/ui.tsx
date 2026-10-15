@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, StyleSheet, View } from 'react-native';
+
+import { Text } from '@/components/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { Icon } from '@/components/Icon';
@@ -7,6 +9,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { coverColors, coverSource, coverUri, formatClock, trackTitle } from '@/lib/cover';
 import { genreLabel } from '@/lib/wave';
 import type { Track } from '@/lib/types';
+import { fonts } from '@/constants/Fonts';
 import { useSettings } from '@/providers/SettingsProvider';
 
 export function TrackCover({
@@ -21,19 +24,14 @@ export function TrackCover({
   const { colors } = useSettings();
   const [from, to] = coverColors(track.id);
   const source = coverSource(track);
-  const inset = size >= 120 ? 10 : size >= 64 ? 6 : 4;
-  const art = Math.max(24, size - inset * 2);
-  const shadow = size > 80 ? '0 14px 28px rgba(0,0,0,0.45)' : '0 4px 12px rgba(0,0,0,0.22)';
   const frame = {
     width: size,
     height: size,
     borderRadius: radius,
     overflow: 'hidden' as const,
     backgroundColor: colors.cardAlt,
-    boxShadow: shadow,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    padding: inset,
   };
 
   const webUri = coverUri(track);
@@ -49,7 +47,7 @@ export function TrackCover({
             height: '100%',
             maxWidth: '100%',
             maxHeight: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
             objectPosition: 'center',
             display: 'block',
           }}
@@ -61,7 +59,7 @@ export function TrackCover({
   if (source) {
     return (
       <View style={frame}>
-        <Image source={source} resizeMode="contain" style={{ width: art, height: art }} />
+        <Image source={source} resizeMode="cover" style={{ width: size, height: size }} />
       </View>
     );
   }
@@ -91,7 +89,7 @@ export function TrackRow({
   const { colors, t } = useSettings();
   return (
     <PressableScale onPress={onPress} style={styles.row} scaleTo={0.985}>
-      <TrackCover track={track} size={52} radius={10} />
+      <TrackCover track={track} size={52} radius={12} />
       <View style={styles.rowBody}>
         <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
           {trackTitle(track)}
@@ -111,7 +109,7 @@ export function TrackRow({
           />
         </PressableScale>
       ) : (
-        <Text style={{ color: colors.muted, fontSize: 12 }}>
+        <Text style={{ color: colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8 }}>
           {track.aiGenerated ? t.aiGenerated : t.userUpload}
         </Text>
       )}
@@ -142,7 +140,7 @@ export function PrimaryButton({
 
 export function SectionTitle({ children }: { children: ReactNode }) {
   const { colors } = useSettings();
-  return <Text style={[styles.section, { color: colors.text }]}>{children}</Text>;
+  return <Text style={[styles.section, fonts.display('700'), { color: colors.text }]}>{children}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -163,16 +161,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowBody: { flex: 1, gap: 3 },
-  title: { fontSize: 16, fontWeight: '600' },
+  title: { fontSize: 15, fontWeight: '600' },
   button: {
     alignSelf: 'flex-start',
     borderRadius: 999,
     paddingHorizontal: 22,
     paddingVertical: 14,
     alignItems: 'center',
-    boxShadow: '0 10px 24px rgba(139, 124, 255, 0.28)',
   },
   buttonDisabled: { opacity: 0.45 },
   buttonText: { fontWeight: '800', fontSize: 16 },
-  section: { fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
+  section: { fontSize: 19, letterSpacing: -0.3 },
 });

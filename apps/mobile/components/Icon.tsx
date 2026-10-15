@@ -20,7 +20,9 @@ export type IconName =
   | 'eye'
   | 'eyeOff'
   | 'speaker'
-  | 'download';
+  | 'download'
+  | 'search'
+  | 'star';
 
 export function Icon({
   name,
@@ -173,6 +175,17 @@ export function Icon({
           <Path d="M12 11.5a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" {...stroke} />
           <Path d="M4.5 20c0-3.6 3.4-5.5 7.5-5.5s7.5 1.9 7.5 5.5" {...stroke} />
         </>
+      ) : null}
+
+      {name === 'search' ? (
+        <>
+          <Path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" {...stroke} />
+          <Path d="m20 20-3.5-3.5" {...stroke} />
+        </>
+      ) : null}
+
+      {name === 'star' ? (
+        <Path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3Z" {...stroke} />
       ) : null}
     </Svg>
   );
