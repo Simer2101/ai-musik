@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AdBanner } from '@/components/AdBanner';
-import { Text, TextInput } from '@/components/AppText';
+import { Avatar } from '@/components/Avatar';
+import { Text, TextInput, useFocusRing } from '@/components/AppText';
 import { HorizontalCarousel } from '@/components/HorizontalCarousel';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
@@ -149,6 +150,7 @@ export default function ListenScreen() {
   const [liked, setLiked] = useState<Track[]>([]);
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchFocus = useFocusRing();
   const [style, setStyle] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -187,14 +189,15 @@ export default function ListenScreen() {
         .slice(0, desktop ? 8 : 5),
     [desktop, tracks]
   );
-  const name: string = user?.user_metadata?.display_name ?? user?.email?.split('@')[0] ?? '';
-  const initial = (name || 'A').slice(0, 1).toUpperCase();
   const openTrack = (item: Track) => router.push(`/track/${item.id}`);
 
   const searchField = (
-    <View style={[styles.search, desktop && styles.searchDesktop, { backgroundColor: colors.cardAlt }]}>
+    <View style={[styles.search, desktop && styles.searchDesktop, { backgroundColor: colors.cardAlt }, searchFocus.ring]}>
       <Icon name="search" color={colors.muted} size={20} />
       <TextInput
+        ring={false}
+        onFocus={searchFocus.onFocus}
+        onBlur={searchFocus.onBlur}
         value={query}
         onChangeText={setQuery}
         autoFocus={!desktop && searchOpen}
@@ -209,8 +212,8 @@ export default function ListenScreen() {
     <PressableScale
       onPress={() => router.push('/profile')}
       accessibilityLabel={t.tabProfile}
-      style={[styles.round, { backgroundColor: colors.border }]}>
-      <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15 }}>{initial}</Text>
+      style={styles.round}>
+      <Avatar size={44} initialOnly={!user} />
     </PressableScale>
   );
 
@@ -374,7 +377,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   searchDesktop: { flexGrow: 0, flexShrink: 1, flexBasis: 420 },
-  searchInput: { flex: 1, minWidth: 0, fontSize: 15, outlineStyle: 'none' } as never,
+  searchInput: { flex: 1, minWidth: 0, fontSize: 15 },
   chip: { borderRadius: 999, paddingHorizontal: 16, height: 36, justifyContent: 'center', borderWidth: 1 },
   wave: { borderRadius: 28, borderWidth: 1, padding: 20, gap: 16 },
   waveDesktop: { padding: 32, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 32 },

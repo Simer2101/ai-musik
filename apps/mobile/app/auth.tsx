@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Text, TextInput } from '@/components/AppText';
+import { Text, TextInput, useFocusRing } from '@/components/AppText';
 
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
@@ -22,6 +22,7 @@ export default function AuthScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const passwordFocus = useFocusRing();
 
   const submit = async () => {
     setBusy(true);
@@ -73,8 +74,11 @@ export default function AuthScreen() {
           placeholderTextColor={colors.muted}
           style={[styles.input, field]}
         />
-        <View style={[styles.passwordField, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.passwordField, { backgroundColor: colors.card, borderColor: colors.border }, passwordFocus.ring]}>
           <TextInput
+            ring={false}
+            onFocus={passwordFocus.onFocus}
+            onBlur={passwordFocus.onBlur}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}

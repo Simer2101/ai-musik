@@ -43,7 +43,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-av"
+      "expo-av",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AImusik uses your photos only to set a profile picture."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

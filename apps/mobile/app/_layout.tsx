@@ -10,6 +10,7 @@ import { MiniPlayer } from '@/components/MiniPlayer';
 import { FONT_FILES } from '@/constants/Fonts';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { PlayerProvider } from '@/providers/PlayerProvider';
+import { ProfileProvider } from '@/providers/ProfileProvider';
 import { SettingsProvider, useSettings } from '@/providers/SettingsProvider';
 import { TokensProvider } from '@/providers/TokensProvider';
 
@@ -34,11 +35,13 @@ export default function RootLayout() {
   return (
     <SettingsProvider>
       <AuthProvider>
-        <TokensProvider>
-          <PlayerProvider>
-            <ThemedNavigation />
-          </PlayerProvider>
-        </TokensProvider>
+        <ProfileProvider>
+          <TokensProvider>
+            <PlayerProvider>
+              <ThemedNavigation />
+            </PlayerProvider>
+          </TokensProvider>
+        </ProfileProvider>
       </AuthProvider>
     </SettingsProvider>
   );
