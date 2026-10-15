@@ -50,22 +50,24 @@ export const palettes: Record<ThemeName, ThemeColors> = {
 type Surface = Pick<ThemeColors, 'bg' | 'card' | 'cardAlt' | 'border' | 'hero'>;
 
 // Surfaces only retune the backgrounds; text and accents stay the same in every variant.
+// Every tone is a near-black neutral, teal or green so it sits well next to the lime accent.
+// The ids are kept from earlier palettes so saved settings still load.
 const SURFACES: Record<BackgroundId, Record<ThemeName, Surface>> = {
   classic: {
     dark: { bg: '#0b0b0d', card: '#16161a', cardAlt: '#1d1d22', border: '#232328', hero: '#121215' },
     light: { bg: '#f4f4f1', card: '#ffffff', cardAlt: '#e9e9e4', border: '#e1e1db', hero: '#ebebe6' },
   },
   graphite: {
-    dark: { bg: '#101014', card: '#1a1a20', cardAlt: '#24242c', border: '#2e2e38', hero: '#1a1a22' },
-    light: { bg: '#f1f2f5', card: '#ffffff', cardAlt: '#e5e7ec', border: '#dee1e7', hero: '#e8eaee' },
+    dark: { bg: '#131313', card: '#1d1d1d', cardAlt: '#262626', border: '#303030', hero: '#181818' },
+    light: { bg: '#f1f1ef', card: '#ffffff', cardAlt: '#e4e4e1', border: '#d9d9d5', hero: '#e8e8e5' },
   },
   ocean: {
-    dark: { bg: '#070d18', card: '#101a2b', cardAlt: '#182538', border: '#20304a', hero: '#0c1524' },
-    light: { bg: '#eef5fc', card: '#ffffff', cardAlt: '#e0ebf7', border: '#d6e3f1', hero: '#e4eef8' },
+    dark: { bg: '#071114', card: '#0e1c20', cardAlt: '#15282d', border: '#1d353b', hero: '#0b181b' },
+    light: { bg: '#eef4f5', card: '#ffffff', cardAlt: '#dfeaec', border: '#d3e1e4', hero: '#e4eef0' },
   },
   plum: {
-    dark: { bg: '#0d0714', card: '#180f24', cardAlt: '#221533', border: '#2d1d42', hero: '#160e20' },
-    light: { bg: '#f8f2fb', card: '#ffffff', cardAlt: '#f0e6f7', border: '#e8dcf0', hero: '#f3eaf8' },
+    dark: { bg: '#09110c', card: '#111c15', cardAlt: '#18271d', border: '#213427', hero: '#0d1711' },
+    light: { bg: '#f0f4ee', card: '#ffffff', cardAlt: '#e1eadd', border: '#d5e0d0', hero: '#e7eee4' },
   },
 };
 
