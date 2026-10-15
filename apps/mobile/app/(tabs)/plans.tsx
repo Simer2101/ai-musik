@@ -42,7 +42,7 @@ export default function PlansScreen() {
   const price = t.planPerMonth.replace('{price}', AD_FREE_PRICE_RUB.toLocaleString(locale));
   const cta = adFree ? t.planRenew : t.plansStart;
   const lightCta = themeName === 'dark';
-  const bullets = [t.planBulletAds, t.planBulletAccount, t.planBulletCancel];
+  const bullets = [t.planBulletAds, t.planBulletDownload, t.planBulletAccount, t.planBulletCancel];
   const desktop = useDesktop();
 
   if (desktop) {
@@ -101,6 +101,7 @@ export default function PlansScreen() {
                   </View>
                 ))}
               </View>
+              <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>{t.downloadNote}</Text>
               <PressableScale onPress={removeAds} style={[styles.cta, { backgroundColor: colors.accent, marginTop: 'auto' }]}>
                 <Text style={[styles.ctaText, { color: colors.buttonText }]}>{cta}</Text>
               </PressableScale>
@@ -165,6 +166,7 @@ export default function PlansScreen() {
                   </Text>
                 ))}
               </View>
+              <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>{t.downloadNote}</Text>
               <PressableScale
                 onPress={removeAds}
                 style={[styles.cta, { backgroundColor: colors.success }]}>

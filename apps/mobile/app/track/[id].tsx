@@ -12,12 +12,14 @@ import { TrackCover } from '@/components/ui';
 import { Waveform } from '@/components/Waveform';
 import { coverColors, formatClock, trackTitle } from '@/lib/cover';
 import { api } from '@/lib/api';
+import { downloadTrack } from '@/lib/download';
 import { commentsFor, demoApi } from '@/lib/demo';
 import { genreLabel } from '@/lib/wave';
 import { useDesktop } from '@/lib/layout';
 import type { Track } from '@/lib/types';
 import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
+import { useTokens } from '@/providers/TokensProvider';
 
 export default function TrackScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,6 +44,8 @@ export default function TrackScreen() {
   const [track, setTrack] = useState<Track | null>(null);
   const [related, setRelated] = useState<Track[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { adFree } = useTokens();
+  const [downloadState, setDownloadState] = useState<'idle' | 'busy' | 'locked' | 'failed'>('idle');
 
   const statusLabel = {
     queued: t.statusQueued,
@@ -210,6 +214,43 @@ export default function TrackScreen() {
           <Text style={{ color: colors.muted }}>{t.report}</Text>
         </PressableScale>
       </View>
+      {track.status === 'ready' && track.audioUrl ? (
+        <View style={{ gap: 10 }}>
+          <PressableScale
+            disabled={downloadState === 'busy'}
+            onPress={async () => {
+              // Downloads are a Premium perk; free listeners get the upsell instead.
+              if (!adFree) return setDownloadState('locked');
+              setDownloadState('busy');
+              try {
+                await downloadTrack(track);
+                setDownloadState('idle');
+              } catch {
+                setDownloadState('failed');
+              }
+            }}
+            style={[styles.download, { borderColor: colors.border }]}>
+            <Icon name="download" color={adFree ? colors.text : colors.muted} size={20} />
+            <Text style={{ color: adFree ? colors.text : colors.muted, fontWeight: '600' }}>
+              {downloadState === 'busy' ? t.downloading : t.download}
+            </Text>
+            {adFree ? null : (
+              <View style={[styles.badge, { backgroundColor: colors.accent }]}>
+                <Text style={{ color: colors.buttonText, fontSize: 11, fontWeight: '700' }}>Premium</Text>
+              </View>
+            )}
+          </PressableScale>
+          {downloadState === 'locked' ? (
+            <View style={[styles.locked, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={{ color: colors.text, flex: 1 }}>{t.downloadLocked}</Text>
+              <PressableScale onPress={() => router.push('/plans')} style={[styles.badge, styles.lockedCta, { backgroundColor: colors.accent }]}>
+                <Text style={{ color: colors.buttonText, fontWeight: '700' }}>{t.planBuy}</Text>
+              </PressableScale>
+            </View>
+          ) : null}
+          {downloadState === 'failed' ? <Text style={{ color: colors.danger }}>{t.downloadFailed}</Text> : null}
+        </View>
+      ) : null}
       {related.length ? (
         <View style={styles.block}>
           <Text style={[styles.blockTitle, { color: colors.text }]}>{t.related}</Text>
@@ -266,4 +307,17 @@ const styles = StyleSheet.create({
   blockTitle: { fontSize: 20, fontWeight: '800' },
   related: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   comment: { gap: 4, paddingVertical: 8 },
+  download: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  locked: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
+  lockedCta: { paddingHorizontal: 16, minHeight: 40, justifyContent: 'center' },
 });
