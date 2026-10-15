@@ -287,8 +287,6 @@ export const demoProfile: Profile = {
   email: DEMO_EMAIL,
   displayName: DEMO_NAME,
   avatarUrl: null,
-  generationsUsedToday: 1,
-  dailyGenerationLimit: 3,
 };
 
 export const demoApi = {
@@ -297,54 +295,6 @@ export const demoApi = {
     const found = catalog.find((item) => item.id === id);
     if (!found) throw new Error('Track not found');
     return { track: { ...found, liked: likedIds.has(found.id) } };
-  },
-  createTrack: (payload: {
-    prompt: string;
-    genre?: string;
-    durationMs?: number;
-    instrumental?: boolean;
-  }) => {
-    const created = track({
-      id: `demo-${Date.now()}`,
-      userId: DEMO_USER_ID,
-      authorName: DEMO_NAME,
-      title: payload.prompt.slice(0, 28),
-      prompt: payload.prompt,
-      genre: payload.genre ?? DEFAULT_GENRE,
-      playCount: 0,
-      durationMs: payload.durationMs ?? 30000,
-      instrumental: payload.instrumental ?? true,
-      likeCount: 0,
-      coverUrl: null,
-      createdAt: new Date().toISOString(),
-    });
-    catalog.unshift(created);
-    return { track: created };
-  },
-  uploadTrack: (payload: {
-    title: string;
-    genre?: string;
-    durationMs?: number;
-    audioUrl: string;
-  }) => {
-    const created = track({
-      id: `upl-${Date.now()}`,
-      userId: DEMO_USER_ID,
-      authorName: DEMO_NAME,
-      title: payload.title,
-      prompt: payload.title,
-      genre: payload.genre ?? DEFAULT_GENRE,
-      playCount: 0,
-      durationMs: payload.durationMs ?? 30000,
-      instrumental: false,
-      likeCount: 0,
-      coverUrl: null,
-      audioUrl: payload.audioUrl,
-      aiGenerated: false,
-      createdAt: new Date().toISOString(),
-    });
-    catalog.unshift(created);
-    return { track: created };
   },
   me: () => demoProfile,
   myTracks: () => ({

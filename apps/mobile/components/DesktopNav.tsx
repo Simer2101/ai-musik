@@ -21,7 +21,6 @@ export function DesktopNav() {
   const items: { href: Href; label: string; icon: IconName }[] = [
     { href: '/', label: t.tabListen, icon: 'headphones' },
     { href: '/wave', label: t.waveTitle, icon: 'radio' },
-    { href: '/publish', label: t.tabPublish, icon: 'plus' },
     { href: '/library', label: t.tabLibrary, icon: 'library' },
     { href: '/plans', label: t.tabPlans, icon: 'star' },
     { href: '/profile', label: t.tabProfile, icon: 'person' },

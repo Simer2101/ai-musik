@@ -223,15 +223,7 @@ export default function ListenScreen() {
         {desktop ? (
           <View style={styles.header}>
             {searchField}
-            <View style={styles.headerRight}>
-              <PressableScale
-                onPress={() => router.push('/publish')}
-                style={[styles.outline, { borderColor: colors.border }]}>
-                <Icon name="plus" color={colors.text} size={18} />
-                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>{t.publishTitle}</Text>
-              </PressableScale>
-              {avatar}
-            </View>
+            {avatar}
           </View>
         ) : (
           <>
@@ -373,15 +365,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   round: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  outline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minHeight: 44,
-    paddingHorizontal: 18,
-    borderRadius: 22,
-    borderWidth: 1,
-  },
   search: {
     flexDirection: 'row',
     alignItems: 'center',

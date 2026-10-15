@@ -32,6 +32,4 @@ export type Profile = {
   email?: string;
   displayName: string;
   avatarUrl: string | null;
-  generationsUsedToday: number;
-  dailyGenerationLimit: number;
 };

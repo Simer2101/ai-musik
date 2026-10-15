@@ -14,7 +14,7 @@ Use this after the app builds and the API is live.
 ## Android
 
 1. Create the app in Play Console: name **AImusik**, package `com.aimusik.app`, category Music & Audio.
-2. Complete content rating, data safety, target audience 13+, and declare AI-generated UGC with moderation.
+2. Complete content rating, data safety, target audience 13+, and declare that the app plays AI-generated music.
 3. Add 512 icon, 1024×500 feature graphic, phone screenshots.
 4. Point privacy policy to `https://YOUR_DOMAIN/privacy.html`.
 5. From `apps/mobile`:
@@ -38,7 +38,7 @@ npx eas submit --platform ios
 ```
 
 4. Install from TestFlight, then Submit for Review.
-5. Review notes: “All audio is AI-generated via ElevenLabs. Users submit text prompts. We rate-limit and accept reports.”
+5. Review notes: “The app plays a curated catalog of AI-generated music. Users cannot create or upload tracks. Listeners can report a track.”
 6. Screenshots for 6.7" iPhone, age 12+, category Music.
 
 ## Legal copy stores expect

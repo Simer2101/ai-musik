@@ -1,6 +1,6 @@
 # AImusik API
 
-Hono server that creates AI tracks through ElevenLabs, stores them in Supabase, and serves the catalog.
+Hono server that serves the AI music catalog, likes and reports from Supabase.
 
 ## Local
 

@@ -1,20 +1,19 @@
 ﻿# AImusik
 
-Mobile app only for AI music: generate a track from a text prompt, then listen to music already created inside the app.
+Mobile app for listening to AI music from the in-app catalog. Users cannot create or upload tracks.
 
 ## Stack
 
 - Expo / React Native (`apps/mobile`) for iPhone and Android
-- Hono API (`apps/api`) for generation, catalog, likes, reports
+- Hono API (`apps/api`) for the catalog, likes, reports
 - Supabase for auth, Postgres, Storage
-- ElevenLabs Music API for official generation
 - Expo EAS for store builds
 - Railway for API hosting
 
 ## Layout
 
 - `apps/mobile` Expo app
-- `apps/api` Generation and catalog API
+- `apps/api` Catalog API
 - `supabase` SQL for tables, RLS, storage
 - `site` Privacy, Terms, landing
 - `STORE_CHECKLIST.md` App Store and Google Play steps
@@ -23,8 +22,7 @@ Mobile app only for AI music: generate a track from a text prompt, then listen t
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` then `supabase/storage.sql` in the SQL editor.
-3. Get a paid ElevenLabs API key.
-4. Copy `.env.example` to `apps/api/.env` and `apps/mobile/.env`.
+3. Copy `.env.example` to `apps/api/.env` and `apps/mobile/.env`.
 
 ## Run locally
 
@@ -64,7 +62,5 @@ Google Play is $25 once. Apple Developer is $99 per year. A Mac is not required.
 
 ## MVP rules
 
-- 3 generations per user per day (`DAILY_GENERATION_LIMIT`)
-- Prompts that name a specific living artist are rejected
 - Every track is labeled AI-generated
 - Users can report a track and delete their account

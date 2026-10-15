@@ -43,12 +43,8 @@ export const config = {
     "SUPABASE_SERVICE_ROLE_KEY",
     "placeholder-service-role-key"
   ),
-  elevenLabsApiKey: process.env.ELEVENLABS_API_KEY ?? "",
-  elevenLabsModelId: process.env.ELEVENLABS_MODEL_ID ?? "music_v2",
-  githubToken: process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN ?? "",
   githubRepo: process.env.GITHUB_REPO ?? "Simer2101/ai-musik",
   githubBranch: process.env.GITHUB_BRANCH ?? "main",
-  dailyGenerationLimit: Number(process.env.DAILY_GENERATION_LIMIT ?? 3),
   corsOrigins: (process.env.CORS_ORIGINS ?? "*")
     .split(",")
     .map((origin) => origin.trim())
@@ -68,6 +64,5 @@ export const isConfigured = {
     looksReal(config.supabaseUrl) &&
     looksReal(config.supabaseAnonKey) &&
     !config.supabaseUrl.includes("YOUR_PROJECT"),
-  elevenLabs: Boolean(config.elevenLabsApiKey),
   github: Boolean(config.githubRepo),
 };
