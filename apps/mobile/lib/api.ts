@@ -1,6 +1,7 @@
 import { loadGithubCatalog, mergeTracks } from './catalog';
 import { DEMO_SESSION_KEY, demoApi } from './demo';
 import { supabase, supabaseConfigured } from './supabase';
+import type { TelegramAuthData } from './telegram';
 import type { Profile, Track } from './types';
 
 function isDemoSession() {
@@ -67,6 +68,12 @@ export const api = {
     if (found) return { track: found };
     return demoApi.track(id);
   },
+  telegramLogin: (data: TelegramAuthData) =>
+    request<{ tokenHash: string }>('/v1/auth/telegram', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      timeoutMs: 15000,
+    }),
   me: () => withDemo(() => request<Profile>('/v1/me'), demoApi.me),
   myTracks: async () => {
     const mine = (await catalogTracks()).filter((item) => item.userId === 'demo-user');

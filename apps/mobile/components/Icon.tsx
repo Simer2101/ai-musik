@@ -22,7 +22,9 @@ export type IconName =
   | 'speaker'
   | 'download'
   | 'search'
-  | 'star';
+  | 'star'
+  | 'telegram'
+  | 'phone';
 
 export function Icon({
   name,
@@ -181,6 +183,20 @@ export function Icon({
         <>
           <Path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" {...stroke} />
           <Path d="m20 20-3.5-3.5" {...stroke} />
+        </>
+      ) : null}
+
+      {name === 'telegram' ? (
+        <>
+          <Path d="M21.2 4.6 3.4 11.5c-.9.4-.9 1.6.1 1.9l4.4 1.4 1.7 5.2c.3.8 1.3 1 1.8.4l2.5-2.6 4.6 3.4c.7.5 1.6.1 1.8-.7l2.3-12.6c.2-1-.7-1.7-1.6-1.3Z" {...stroke} />
+          <Path d="m7.9 14.8 8.6-6" {...stroke} />
+        </>
+      ) : null}
+
+      {name === 'phone' ? (
+        <>
+          <Rect x={7} y={2.5} width={10} height={19} rx={2.5} {...stroke} />
+          <Path d="M11 18h2" {...stroke} />
         </>
       ) : null}
 

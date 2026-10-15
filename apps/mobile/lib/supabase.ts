@@ -7,14 +7,24 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 const memoryStore = new Map<string, string>();
 
+// Keep web sessions across reloads; fall back to memory where storage is blocked.
+function webStorage() {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  } catch {
+    return null;
+  }
+}
+
 const store = {
   getItem: async (key: string) => {
-    if (Platform.OS === 'web') return memoryStore.get(key) ?? null;
+    if (Platform.OS === 'web') return webStorage()?.getItem(key) ?? memoryStore.get(key) ?? null;
     return SecureStore.getItemAsync(key);
   },
   setItem: async (key: string, value: string) => {
     if (Platform.OS === 'web') {
       memoryStore.set(key, value);
+      webStorage()?.setItem(key, value);
       return;
     }
     await SecureStore.setItemAsync(key, value);
@@ -22,6 +32,7 @@ const store = {
   removeItem: async (key: string) => {
     if (Platform.OS === 'web') {
       memoryStore.delete(key);
+      webStorage()?.removeItem(key);
       return;
     }
     await SecureStore.deleteItemAsync(key);

@@ -13,6 +13,7 @@ import { TrackCover } from '@/components/ui';
 import { BACKGROUND_IDS, buildColors, type BackgroundId, type ThemeName } from '@/constants/Colors';
 import { api } from '@/lib/api';
 import { pickAvatar } from '@/lib/avatar';
+import { formatPhone } from '@/lib/phone';
 import { trackTitle } from '@/lib/cover';
 import { demoApi } from '@/lib/demo';
 import { genreLabel } from '@/lib/wave';
@@ -156,6 +157,12 @@ export default function ProfileScreen() {
   }
 
   const field = [styles.input, { backgroundColor: colors.cardAlt, color: colors.text }];
+  // Phone sign-ins show the number; Telegram sign-ins have only an internal address, so nothing.
+  const contact = user.phone
+    ? { label: t.fieldPhone, value: formatPhone(`+${user.phone.replace(/^\+/, '')}`) }
+    : user.email && !user.email.endsWith('@telegram.aimusik.app')
+      ? { label: t.fieldEmail, value: user.email }
+      : null;
 
   return (
     <ScreenBackdrop>
@@ -302,10 +309,12 @@ export default function ProfileScreen() {
         </View>
       ) : null}
 
-      <View style={[styles.card, { backgroundColor: colors.card }]}>
-        <Text style={{ color: colors.muted, fontSize: 12 }}>{t.fieldEmail}</Text>
-        <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>{user.email}</Text>
-      </View>
+      {contact ? (
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={{ color: colors.muted, fontSize: 12 }}>{contact.label}</Text>
+          <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>{contact.value}</Text>
+        </View>
+      ) : null}
 
       <View style={[styles.card, { backgroundColor: colors.card }]}>
         <Text style={{ color: colors.muted, fontSize: 12 }}>{t.fieldLanguage}</Text>

@@ -2,7 +2,6 @@ import { DEFAULT_GENRE } from './wave';
 import type { Profile, Track, TrackComment } from './types';
 
 export const DEMO_EMAIL = 'demo@aimusik.app';
-export const DEMO_PASSWORD = 'aimusik';
 export const DEMO_NAME = 'Демо-слушатель';
 export const DEMO_USER_ID = 'demo-user';
 export const DEMO_SESSION_KEY = 'aimusik.demo.session';
@@ -319,6 +318,3 @@ export const demoApi = {
   deleteAccount: () => ({ ok: true }),
 };
 
-export function isDemoLogin(email: string, password: string) {
-  return email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
-}

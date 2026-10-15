@@ -26,6 +26,10 @@ const STYLES = GENRES.map((item) => ({
   needles: item.needles,
 }));
 
+// Gap between carousel items (HorizontalCarousel row gap) and the smallest desktop cover.
+const SHELF_GAP = 12;
+const SHELF_MIN = 168;
+
 const HERO_MOODS: { id: Mood; key: 'moodEnergy' | 'moodCalm' | 'moodFocus' | 'moodNight' }[] = [
   { id: 'energy', key: 'moodEnergy' },
   { id: 'calm', key: 'moodCalm' },
@@ -151,6 +155,7 @@ export default function ListenScreen() {
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const searchFocus = useFocusRing();
+  const [shelfWidth, setShelfWidth] = useState(0);
   const [style, setStyle] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -190,6 +195,12 @@ export default function ListenScreen() {
     [desktop, tracks]
   );
   const openTrack = (item: Track) => router.push(`/track/${item.id}`);
+  // On desktop, size covers so a whole number fits the row: no cover is cut off at the right edge.
+  const shelf = (() => {
+    if (!desktop || !shelfWidth) return { size: desktop ? 168 : 128, perPage: 1 };
+    const perPage = Math.max(3, Math.floor((shelfWidth + SHELF_GAP) / (SHELF_MIN + SHELF_GAP)));
+    return { size: Math.floor((shelfWidth - SHELF_GAP * (perPage - 1)) / perPage), perPage };
+  })();
 
   const searchField = (
     <View style={[styles.search, desktop && styles.searchDesktop, { backgroundColor: colors.cardAlt }, searchFocus.ring]}>
@@ -290,14 +301,15 @@ export default function ListenScreen() {
         ) : (
           <>
             {tracks.length ? (
-              <HorizontalCarousel title={t.newReleases}>
+              <View onLayout={(event) => setShelfWidth(event.nativeEvent.layout.width)}>
+              <HorizontalCarousel title={t.newReleases} step={desktop ? shelf.perPage * (shelf.size + SHELF_GAP) : undefined}>
                 {tracks.slice(0, desktop ? 12 : 8).map((item) => (
                   <PressableScale
                     key={item.id}
                     onPress={() => openTrack(item)}
-                    style={{ width: desktop ? 168 : 128 }}
+                    style={{ width: shelf.size }}
                     scaleTo={0.97}>
-                    <TrackCover track={item} size={desktop ? 168 : 128} radius={18} />
+                    <TrackCover track={item} size={shelf.size} radius={18} />
                     <Text numberOfLines={1} style={{ color: colors.text, fontWeight: '600', fontSize: desktop ? 15 : 14, marginTop: 8 }}>
                       {trackTitle(item)}
                     </Text>
@@ -308,6 +320,7 @@ export default function ListenScreen() {
                   </PressableScale>
                 ))}
               </HorizontalCarousel>
+              </View>
             ) : null}
 
             {popular.length ? (

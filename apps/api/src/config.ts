@@ -43,6 +43,7 @@ export const config = {
     "SUPABASE_SERVICE_ROLE_KEY",
     "placeholder-service-role-key"
   ),
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
   githubRepo: process.env.GITHUB_REPO ?? "Simer2101/ai-musik",
   githubBranch: process.env.GITHUB_BRANCH ?? "main",
   corsOrigins: (process.env.CORS_ORIGINS ?? "*")
@@ -65,4 +66,5 @@ export const isConfigured = {
     looksReal(config.supabaseAnonKey) &&
     !config.supabaseUrl.includes("YOUR_PROJECT"),
   github: Boolean(config.githubRepo),
+  telegram: Boolean(config.telegramBotToken),
 };

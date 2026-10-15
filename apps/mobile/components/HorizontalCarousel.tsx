@@ -10,10 +10,13 @@ import { useSettings } from '@/providers/SettingsProvider';
 export function HorizontalCarousel({
   title,
   extra,
+  step,
   children,
 }: {
   title?: ReactNode;
   extra?: ReactNode;
+  /** Pixels one arrow press scrolls; pass a full page when items are sized to fit exactly. */
+  step?: number;
   children: ReactNode;
 }) {
   const { colors } = useSettings();
@@ -29,8 +32,8 @@ export function HorizontalCarousel({
   const canRight = contentW > viewW + 12 && x < maxX - 12;
 
   const jump = (direction: number) => {
-    const step = Math.max(240, viewW * 0.72);
-    const next = Math.max(0, Math.min(maxX, offset.current + direction * step));
+    const distance = step ?? Math.max(240, viewW * 0.72);
+    const next = Math.max(0, Math.min(maxX, offset.current + direction * distance));
     scroller.current?.scrollTo({ x: next, animated: true });
   };
 

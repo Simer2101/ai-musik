@@ -5,6 +5,7 @@ import { z } from "zod";
 import { config, isConfigured } from "./config.js";
 import { listCatalogTracks, readLocalMedia } from "./lib/github-catalog.js";
 import { getUserFromToken, supabaseAdmin } from "./lib/supabase.js";
+import { verifyTelegramLogin, type TelegramAuthData } from "./lib/telegram.js";
 import {
   likedTrackIds,
   TRACK_SELECT,
@@ -29,6 +30,7 @@ app.get("/health", (c) =>
     service: "aimusik-api",
     supabase: isConfigured.supabase,
     github: isConfigured.github,
+    telegram: isConfigured.telegram,
   })
 );
 
@@ -102,6 +104,52 @@ app.get("/v1/tracks/:id", async (c) => {
 
   const liked = await likedTrackIds(user?.id, [row.id]);
   return c.json({ track: toTrackDto(row, liked.has(row.id)) });
+});
+
+const telegramSchema = z
+  .object({
+    id: z.number().int(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    username: z.string().optional(),
+    photo_url: z.string().optional(),
+    auth_date: z.number().int(),
+    hash: z.string().regex(/^[0-9a-f]{64}$/),
+  })
+  .passthrough();
+
+// Telegram sign-in: verify Telegram's signature, make sure a Supabase user exists for this
+// Telegram account, and hand back a one-time magic-link token the app exchanges for a session.
+app.post("/v1/auth/telegram", async (c) => {
+  if (!isConfigured.telegram || !isConfigured.supabase) {
+    return c.json({ error: "Telegram sign-in is not configured" }, 503);
+  }
+  const parsed = telegramSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: "Invalid Telegram data" }, 400);
+  const data = parsed.data as TelegramAuthData;
+  if (!verifyTelegramLogin(data, config.telegramBotToken)) {
+    return c.json({ error: "Telegram signature check failed" }, 401);
+  }
+
+  const email = `tg${data.id}@telegram.aimusik.app`;
+  const displayName = [data.first_name, data.last_name].filter(Boolean).join(" ") || data.username || "Telegram";
+  const created = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      display_name: displayName,
+      telegram_id: data.id,
+      telegram_username: data.username ?? null,
+      avatar_url: data.photo_url ?? null,
+    },
+  });
+  if (created.error && !/already/i.test(created.error.message)) {
+    return c.json({ error: created.error.message }, 500);
+  }
+
+  const link = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email });
+  if (link.error) return c.json({ error: link.error.message }, 500);
+  return c.json({ tokenHash: link.data.properties.hashed_token });
 });
 
 app.get("/v1/me", async (c) => {

@@ -2,28 +2,28 @@ import { User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import {
-  DEMO_EMAIL,
-  DEMO_NAME,
-  DEMO_SESSION_KEY,
-  DEMO_USER_ID,
-  isDemoLogin,
-} from '@/lib/demo';
+import { api } from '@/lib/api';
+import { DEMO_EMAIL, DEMO_NAME, DEMO_SESSION_KEY, DEMO_USER_ID } from '@/lib/demo';
 import { supabase, supabaseConfigured } from '@/lib/supabase';
+import type { TelegramAuthData } from '@/lib/telegram';
 
 export const demoUser = {
   id: DEMO_USER_ID,
   email: DEMO_EMAIL,
   user_metadata: { display_name: DEMO_NAME },
-} as User;
+} as unknown as User;
 
 type AuthContextValue = {
   session: { access_token: string } | null;
   user: User | null;
   loading: boolean;
   isDemo: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<string | null>;
+  /** Sends a one-time SMS code; `phone` is in E.164 form, e.g. +79001234567. */
+  sendPhoneCode: (phone: string) => Promise<void>;
+  /** Signs in (or registers) with the SMS code. */
+  verifyPhoneCode: (phone: string, code: string) => Promise<void>;
+  /** Signs in (or registers) with a Telegram login result; `null` in demo mode. */
+  signInWithTelegram: (data: TelegramAuthData | null) => Promise<void>;
   signOut: () => Promise<void>;
   enterDemo: () => void;
 };
@@ -93,29 +93,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isDemo,
       enterDemo,
-      signIn: async (email, password) => {
-        if (isDemoLogin(email, password) || !supabaseConfigured) {
+      // Without Supabase the app runs in demo mode: any number and any 6-digit code sign in.
+      sendPhoneCode: async (phone) => {
+        if (!supabaseConfigured) return;
+        const { error } = await supabase.auth.signInWithOtp({ phone });
+        if (error) throw error;
+      },
+      verifyPhoneCode: async (phone, code) => {
+        if (!supabaseConfigured) {
+          if (!/^\d{6}$/.test(code)) throw new Error('Invalid code');
           enterDemo();
           return;
         }
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
         if (error) throw error;
       },
-      signUp: async (email, password, displayName) => {
-        if (!supabaseConfigured) {
+      signInWithTelegram: async (data) => {
+        if (!supabaseConfigured || !data) {
           enterDemo();
-          return null;
+          return;
         }
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { display_name: displayName } },
-        });
+        const { tokenHash } = await api.telegramLogin(data);
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'magiclink' });
         if (error) throw error;
-        if (!data.session) {
-          return 'Check your email to confirm the account, then sign in.';
-        }
-        return null;
       },
       signOut: async () => {
         persistDemo(false);
