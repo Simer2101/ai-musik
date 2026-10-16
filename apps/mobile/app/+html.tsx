@@ -30,7 +30,7 @@ export default function Root({ children }: { children: ReactNode }) {
 
 const responsiveBackground = `
 body {
-  background-color: #0b0b0d;
+  background-color: #0a0a0c;
 }
 img.sonari-cover {
   width: 100% !important;

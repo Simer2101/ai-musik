@@ -10,6 +10,7 @@ import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { SectionTitle, TrackCover, TrackRow } from '@/components/ui';
+import { mixHex } from '@/constants/Colors';
 import { fonts } from '@/constants/Fonts';
 import { api } from '@/lib/api';
 import { formatClock, trackTitle } from '@/lib/cover';
@@ -38,6 +39,7 @@ const HERO_MOODS: { id: Mood; key: 'moodEnergy' | 'moodCalm' | 'moodFocus' | 'mo
 ];
 
 // Decorative bar heights for the wave card; the first part is lit to suggest playback.
+const LIT_BARS = 16;
 const BARS = [10, 18, 26, 14, 30, 22, 34, 16, 24, 36, 20, 12, 28, 32, 18, 26, 10, 22, 34, 30, 14, 24, 18, 36, 28, 12, 20, 30, 16, 26, 34, 22, 10, 18, 28, 24, 14, 32, 20, 12];
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
@@ -70,7 +72,8 @@ function WaveCard({ desktop, onStart, onMood }: { desktop: boolean; onStart: () 
             flex: 1,
             height: height * scale,
             borderRadius: desktop ? 3 : 2,
-            backgroundColor: index < 16 ? colors.accent : colors.border,
+            // Lit bars fade from the blue accent into the violet one.
+            backgroundColor: index < LIT_BARS ? mixHex(colors.accent, colors.accent2, index / (LIT_BARS - 1)) : colors.border,
           }}
         />
       ))}
@@ -243,7 +246,7 @@ export default function ListenScreen() {
           <>
             <View style={styles.header}>
               <Text style={[fonts.display('800'), { color: colors.text, fontSize: 22, letterSpacing: -0.4 }]}>
-                Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
+                Son<Text style={[fonts.display('800'), { color: colors.accent2 }]}>ari</Text>
               </Text>
               <View style={styles.headerRight}>
                 <PressableScale

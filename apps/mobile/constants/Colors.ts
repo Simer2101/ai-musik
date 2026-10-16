@@ -17,57 +17,70 @@ export type ThemeColors = {
 };
 
 export const palettes: Record<ThemeName, ThemeColors> = {
+  // Black and white with a soft blue accent and a soft violet second accent.
   dark: {
-    bg: '#0b0b0d',
-    card: '#16161a',
-    cardAlt: '#1d1d22',
-    text: '#f3f3f0',
-    muted: '#8e8e96',
-    accent: '#c6f432',
-    accent2: '#c6f432',
+    bg: '#0a0a0c',
+    card: '#141418',
+    cardAlt: '#1b1b21',
+    text: '#f5f5f7',
+    muted: '#8f8f9a',
+    accent: '#9cc9ff',
+    accent2: '#c3b4ff',
     danger: '#ff6b81',
-    border: '#232328',
-    success: '#c6f432',
-    buttonText: '#0b0b0d',
-    hero: '#121215',
+    border: '#24242b',
+    success: '#c3b4ff',
+    buttonText: '#0a0a0c',
+    hero: '#111115',
   },
   light: {
-    bg: '#f4f4f1',
+    bg: '#f6f6f8',
     card: '#ffffff',
-    cardAlt: '#e9e9e4',
-    text: '#111113',
-    muted: '#62626a',
-    accent: '#3f6212',
-    accent2: '#3f6212',
+    cardAlt: '#ececf1',
+    text: '#111114',
+    muted: '#63636d',
+    accent: '#2d63c8',
+    accent2: '#6e52d6',
     danger: '#be123c',
-    border: '#e1e1db',
-    success: '#3f6212',
+    border: '#e2e2e8',
+    success: '#6e52d6',
     buttonText: '#ffffff',
-    hero: '#ebebe6',
+    hero: '#ededf2',
   },
 };
+
+/** Blends two #rrggbb colours; t = 0 gives `from`, t = 1 gives `to`. */
+export function mixHex(from: string, to: string, t: number) {
+  const a = Number.parseInt(from.slice(1), 16);
+  const b = Number.parseInt(to.slice(1), 16);
+  const channel = (shift: number) => {
+    const x = (a >> shift) & 255;
+    const y = (b >> shift) & 255;
+    return Math.round(x + (y - x) * t);
+  };
+  return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, '0')).join('')}`;
+}
 
 type Surface = Pick<ThemeColors, 'bg' | 'card' | 'cardAlt' | 'border' | 'hero'>;
 
 // Surfaces only retune the backgrounds; text and accents stay the same in every variant.
-// Every tone is a near-black neutral, teal or green so it sits well next to the lime accent.
+// Every tone is a near-black neutral, indigo or violet so it sits well with the blue and violet accents.
 // The ids are kept from earlier palettes so saved settings still load.
 const SURFACES: Record<BackgroundId, Record<ThemeName, Surface>> = {
   classic: {
-    dark: { bg: '#0b0b0d', card: '#16161a', cardAlt: '#1d1d22', border: '#232328', hero: '#121215' },
-    light: { bg: '#f4f4f1', card: '#ffffff', cardAlt: '#e9e9e4', border: '#e1e1db', hero: '#ebebe6' },
+    dark: { bg: '#0a0a0c', card: '#141418', cardAlt: '#1b1b21', border: '#24242b', hero: '#111115' },
+    light: { bg: '#f6f6f8', card: '#ffffff', cardAlt: '#ececf1', border: '#e2e2e8', hero: '#ededf2' },
   },
   graphite: {
-    dark: { bg: '#131313', card: '#1d1d1d', cardAlt: '#262626', border: '#303030', hero: '#181818' },
-    light: { bg: '#f1f1ef', card: '#ffffff', cardAlt: '#e4e4e1', border: '#d9d9d5', hero: '#e8e8e5' },
+    dark: { bg: '#131315', card: '#1d1d20', cardAlt: '#26262a', border: '#303035', hero: '#18181b' },
+    light: { bg: '#f1f1f3', card: '#ffffff', cardAlt: '#e4e4e8', border: '#d9d9de', hero: '#e8e8ec' },
   },
   ocean: {
-    dark: { bg: '#071114', card: '#0e1c20', cardAlt: '#15282d', border: '#1d353b', hero: '#0b181b' },
-    light: { bg: '#eef4f5', card: '#ffffff', cardAlt: '#dfeaec', border: '#d3e1e4', hero: '#e4eef0' },
+    dark: { bg: '#090c15', card: '#111628', cardAlt: '#182036', border: '#202a44', hero: '#0d1120' },
+    light: { bg: '#f1f4fb', card: '#ffffff', cardAlt: '#e3e9f6', border: '#d7dff0', hero: '#e8edf8' },
   },
   plum: {
-    dark: { bg: '#09110c', card: '#111c15', cardAlt: '#18271d', border: '#213427', hero: '#0d1711' },
-    light: { bg: '#f0f4ee', card: '#ffffff', cardAlt: '#e1eadd', border: '#d5e0d0', hero: '#e7eee4' },
+    dark: { bg: '#0d0a15', card: '#161226', cardAlt: '#1e1833', border: '#2a2242', hero: '#120e1e' },
+    light: { bg: '#f5f2fb', card: '#ffffff', cardAlt: '#ebe5f7', border: '#e0d8f0', hero: '#efeaf8' },
   },
 };
 
