@@ -10,7 +10,7 @@ import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { TrackCover } from '@/components/ui';
 import { Waveform } from '@/components/Waveform';
-import { coverColors, formatClock, trackTitle } from '@/lib/cover';
+import { coverColors, trackTitle } from '@/lib/cover';
 import { api } from '@/lib/api';
 import { downloadTrack } from '@/lib/download';
 import { commentsFor, demoApi } from '@/lib/demo';
@@ -129,18 +129,14 @@ export default function TrackScreen() {
       {track.status === 'ready' ? (
         <>
           <Waveform
-            progress={active && durationMs ? positionMs / durationMs : 0}
-            onSeek={(ratio) => {
-              if (!active) void play(track, related.length ? [track, ...related] : [track]);
-              void seek((durationMs || track.durationMs) * ratio);
+            positionMs={active ? positionMs : 0}
+            durationMs={active ? durationMs || track.durationMs : track.durationMs}
+            onSeek={async (ms) => {
+              // Start this track first; the player holds the seek until it has loaded.
+              if (!active) await play(track, related.length ? [track, ...related] : [track]);
+              void seek(ms);
             }}
           />
-          <View style={styles.times}>
-            <Text style={{ color: colors.muted, fontSize: 12 }}>{formatClock(active ? positionMs : 0)}</Text>
-            <Text style={{ color: colors.muted, fontSize: 12 }}>
-              {formatClock(active ? durationMs || track.durationMs : track.durationMs)}
-            </Text>
-          </View>
           <View style={styles.controls}>
             <PressableScale onPress={toggleShuffle} hitSlop={14}>
               <Icon name="shuffle" color={shuffle ? colors.accent2 : colors.muted} size={22} />
@@ -291,7 +287,6 @@ const styles = StyleSheet.create({
   metaDesktop: { flex: 1, gap: 8, paddingBottom: 8 },
   meta: { paddingHorizontal: 24, gap: 4 },
   title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
-  times: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24 },
   row: { flexDirection: 'row', gap: 18, paddingHorizontal: 24, alignItems: 'center' },
   likeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   controls: {

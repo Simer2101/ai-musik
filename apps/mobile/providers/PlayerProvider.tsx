@@ -33,6 +33,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const shuffleRef = useRef(false);
   const repeatRef = useRef(false);
   const radioRef = useRef(false);
+  // A seek asked for before the new track has loaded; applied as soon as it can be.
+  const pendingSeekRef = useRef<number | null>(null);
 
   const [track, setTrack] = useState<Track | null>(null);
   const [queue, setQueue] = useState<Track[]>([]);
@@ -68,10 +70,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       soundRef.current.remove();
       soundRef.current = null;
     }
+    pendingSeekRef.current = null;
     // expo-audio reports time in seconds; the rest of the app works in milliseconds.
     const sound = createAudioPlayer({ uri: next.audioUrl }, { updateInterval: 400 });
     sound.addListener('playbackStatusUpdate', (status) => {
       if (!status.isLoaded) return;
+      if (pendingSeekRef.current !== null) {
+        const target = pendingSeekRef.current;
+        pendingSeekRef.current = null;
+        void sound.seekTo(target / 1000);
+        return;
+      }
       setIsPlaying(status.playing);
       setPositionMs(Math.round(status.currentTime * 1000));
       setDurationMs(status.duration > 0 ? Math.round(status.duration * 1000) : next.durationMs);
@@ -153,7 +162,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         else soundRef.current.play();
       },
       seek: async (ms) => {
-        await soundRef.current?.seekTo(ms / 1000);
+        const sound = soundRef.current;
+        if (!sound) return;
+        // Move the clock now so the bar does not jump back until the next status update.
+        setPositionMs(ms);
+        if (!sound.isLoaded) {
+          pendingSeekRef.current = ms;
+          return;
+        }
+        await sound.seekTo(ms / 1000);
       },
       next: async () => step(1),
       prev: async () => {

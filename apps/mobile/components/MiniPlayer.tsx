@@ -59,14 +59,12 @@ export function MiniPlayer() {
             </PressableScale>
           </View>
           <View style={styles.desktopWave}>
-            <Text style={{ color: colors.muted, fontSize: 11, width: 36 }}>{formatClock(positionMs)}</Text>
             <Waveform
-              progress={progress}
-              onSeek={(ratio) => void seek((durationMs || track.durationMs) * ratio)}
+              inline
+              positionMs={positionMs}
+              durationMs={durationMs || track.durationMs}
+              onSeek={(ms) => void seek(ms)}
             />
-            <Text style={{ color: colors.muted, fontSize: 11, width: 36, textAlign: 'right' }}>
-              {formatClock(durationMs || track.durationMs)}
-            </Text>
           </View>
         </View>
         <View style={styles.desktopSpacer} />

@@ -1,53 +1,155 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { StyleSheet, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { formatClock } from '@/lib/cover';
 import { useSettings } from '@/providers/SettingsProvider';
 
 const BARS = [10, 18, 12, 26, 16, 32, 20, 28, 11, 30, 17, 24, 9, 31, 14, 27, 19, 22, 13, 29, 15, 21, 12, 25, 18, 33, 14, 23];
+const STEP_MS = 10000;
+/** Bar plus gap, in px: the bar count follows the width so the wave stays dense. */
+const PITCH = 6;
 
+const clamp = (value: number) => Math.min(1, Math.max(0, value));
+
+/**
+ * Waveform seek bar: tap anywhere or drag to scrub. While dragging, the bars and the
+ * clock follow the finger and the track only seeks on release, so playback never stutters.
+ * `inline` puts the clocks either side of the bars (desktop player), otherwise they sit below.
+ */
 export function Waveform({
-  progress,
+  positionMs,
+  durationMs,
   onSeek,
+  inline = false,
 }: {
-  progress: number;
-  onSeek: (ratio: number) => void;
+  positionMs: number;
+  durationMs: number;
+  onSeek: (ms: number) => void;
+  inline?: boolean;
 }) {
   const { colors } = useSettings();
-  const played = Math.min(1, Math.max(0, progress));
+  const width = useRef(0);
+  const left = useRef(0);
+  const [count, setCount] = useState(BARS.length);
+  const [scrub, setScrub] = useState<number | null>(null);
+
+  const progress = scrub ?? (durationMs > 0 ? clamp(positionMs / durationMs) : 0);
+  const shownMs = scrub === null ? positionMs : scrub * durationMs;
+
+  // pageX stays in one coordinate space while the finger moves, even off the bar, so the
+  // bar's left edge is worked out once on touch-down and reused for every move.
+  const ratioAt = (event: GestureResponderEvent) =>
+    width.current > 0 ? clamp((event.nativeEvent.pageX - left.current) / width.current) : 0;
+
+  const begin = (event: GestureResponderEvent) => {
+    left.current = event.nativeEvent.pageX - event.nativeEvent.locationX;
+    setScrub(ratioAt(event));
+  };
+  const move = (event: GestureResponderEvent) => setScrub(ratioAt(event));
+  const end = (event: GestureResponderEvent) => {
+    const ratio = ratioAt(event);
+    setScrub(null);
+    if (durationMs > 0) onSeek(ratio * durationMs);
+  };
+
+  const step = (direction: number) => {
+    if (durationMs > 0) onSeek(Math.min(durationMs, Math.max(0, positionMs + direction * STEP_MS)));
+  };
+
+  const bars = (
+    <View
+      style={[styles.bars, inline && styles.barsInline]}
+      onLayout={(event: LayoutChangeEvent) => {
+        width.current = event.nativeEvent.layout.width;
+        setCount(Math.max(12, Math.floor(width.current / PITCH)));
+      }}
+      onStartShouldSetResponder={() => true}
+      onMoveShouldSetResponder={() => true}
+      onResponderTerminationRequest={() => false}
+      onResponderGrant={begin}
+      onResponderMove={move}
+      onResponderRelease={end}
+      onResponderTerminate={() => setScrub(null)}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel="Перемотка"
+      accessibilityValue={{ min: 0, max: Math.round(durationMs / 1000), now: Math.round(shownMs / 1000) }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(event) => step(event.nativeEvent.actionName === 'increment' ? 1 : -1)}>
+      {/* Children ignore touches so locationX is always measured against the whole bar. */}
+      <View style={styles.row} pointerEvents="none">
+        {Array.from({ length: count }, (_, index) => {
+          const height = BARS[index % BARS.length];
+          const active = (index + 0.5) / count <= progress;
+          return (
+            <View
+              key={index}
+              style={[
+                styles.bar,
+                {
+                  height: scrub === null ? height : height + 2,
+                  backgroundColor: active ? colors.accent : colors.muted,
+                  opacity: active ? 1 : 0.35,
+                },
+              ]}
+            />
+          );
+        })}
+      </View>
+    </View>
+  );
+
+  const clock = (ms: number, align: 'left' | 'right') => (
+    <Text
+      style={[
+        styles.clock,
+        inline && styles.clockInline,
+        { color: scrub !== null && align === 'left' ? colors.text : colors.muted, textAlign: align },
+      ]}>
+      {formatClock(ms)}
+    </Text>
+  );
+
+  if (inline) {
+    return (
+      <View style={styles.inline}>
+        {clock(shownMs, 'left')}
+        {bars}
+        {clock(durationMs, 'right')}
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.row}>
-      {BARS.map((height, index) => {
-        const ratio = (index + 0.5) / BARS.length;
-        const active = ratio <= played;
-        return (
-          <Pressable key={`${height}-${index}`} onPress={() => onSeek(ratio)} style={styles.hit}>
-            <View
-              style={{
-                width: 3,
-                height,
-                borderRadius: 2,
-                backgroundColor: active ? colors.accent : colors.cardAlt,
-              }}
-            />
-          </Pressable>
-        );
-      })}
+    <View style={styles.stack}>
+      {bars}
+      <View style={styles.times}>
+        {clock(shownMs, 'left')}
+        {clock(durationMs, 'right')}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  stack: { width: '100%', gap: 6 },
+  inline: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 },
+  bars: {
+    alignSelf: 'stretch',
+    height: 40,
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  barsInline: { flex: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
+    justifyContent: 'space-between',
     height: 40,
-    width: '100%',
   },
-  hit: {
-    height: 40,
-    justifyContent: 'center',
-    paddingHorizontal: 1,
-  },
+  bar: { width: 3, borderRadius: 2 },
+  times: { flexDirection: 'row', justifyContent: 'space-between' },
+  clock: { fontSize: 12, fontVariant: ['tabular-nums'] },
+  clockInline: { fontSize: 11, width: 36 },
 });

@@ -11,7 +11,7 @@ import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { SectionTitle, TrackCover, TrackRow } from '@/components/ui';
 import { Waveform } from '@/components/Waveform';
 import { api } from '@/lib/api';
-import { formatClock, trackTitle } from '@/lib/cover';
+import { trackTitle } from '@/lib/cover';
 import { demoApi } from '@/lib/demo';
 import { useDesktop } from '@/lib/layout';
 import { filterByMood, shuffleTracks, type Mood } from '@/lib/wave';
@@ -52,7 +52,6 @@ export default function WaveScreen() {
   const picked = pool.find((item) => item.id === pickedId) ?? null;
   const hero = inPool && track ? track : picked ?? pool[0] ?? null;
   const live = Boolean(track && inPool);
-  const progress = live && durationMs > 0 ? positionMs / durationMs : 0;
 
   const startWave = async (from?: Track) => {
     const seed = from ?? hero;
@@ -122,17 +121,12 @@ export default function WaveScreen() {
                 </Text>
                 <Text style={{ color: colors.muted }}>{hero.authorName}</Text>
                 <Waveform
-                  progress={progress}
-                  onSeek={(ratio) => {
-                    if (live) void seek((durationMs || hero.durationMs) * ratio);
+                  positionMs={live ? positionMs : 0}
+                  durationMs={live ? durationMs || hero.durationMs : hero.durationMs}
+                  onSeek={(ms) => {
+                    if (live) void seek(ms);
                   }}
                 />
-                <View style={styles.times}>
-                  <Text style={{ color: colors.muted, fontSize: 12 }}>{formatClock(live ? positionMs : 0)}</Text>
-                  <Text style={{ color: colors.muted, fontSize: 12 }}>
-                    {formatClock(live ? durationMs || hero.durationMs : hero.durationMs)}
-                  </Text>
-                </View>
                 <View style={[styles.controls, desktop && styles.controlsDesktop]}>
                   <PressableScale onPress={() => void skip(-1)} hitSlop={12} scaleTo={0.88}>
                     <Icon name="prev" color={colors.text} size={26} />
@@ -195,7 +189,6 @@ const styles = StyleSheet.create({
   heroMeta: { alignItems: 'center', gap: 10, width: '100%' },
   heroMetaDesktop: { flex: 1, alignItems: 'flex-start' },
   heroTitle: { fontSize: 24, fontWeight: '800', textAlign: 'center' },
-  times: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4 },
   controls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginTop: 6, zIndex: 2 },
   controlsDesktop: { alignSelf: 'flex-start' },
   play: { width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
