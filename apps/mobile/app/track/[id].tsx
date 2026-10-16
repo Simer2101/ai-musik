@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
@@ -13,7 +13,7 @@ import { Waveform } from '@/components/Waveform';
 import { coverColors, trackTitle } from '@/lib/cover';
 import { api } from '@/lib/api';
 import { downloadTrack } from '@/lib/download';
-import { commentsFor, demoApi } from '@/lib/demo';
+import { demoApi } from '@/lib/demo';
 import { genreLabel } from '@/lib/wave';
 import { useDesktop } from '@/lib/layout';
 import type { Track } from '@/lib/types';
@@ -46,6 +46,8 @@ export default function TrackScreen() {
   const [error, setError] = useState<string | null>(null);
   const { adFree } = useTokens();
   const [downloadState, setDownloadState] = useState<'idle' | 'busy' | 'locked' | 'failed'>('idle');
+  const [likeError, setLikeError] = useState<string | null>(null);
+  const likeBusy = useRef(false);
 
   const statusLabel = {
     queued: t.statusQueued,
@@ -128,15 +130,17 @@ export default function TrackScreen() {
       ) : null}
       {track.status === 'ready' ? (
         <>
-          <Waveform
-            positionMs={active ? positionMs : 0}
-            durationMs={active ? durationMs || track.durationMs : track.durationMs}
-            onSeek={async (ms) => {
-              // Start this track first; the player holds the seek until it has loaded.
-              if (!active) await play(track, related.length ? [track, ...related] : [track]);
-              void seek(ms);
-            }}
-          />
+          <View style={styles.seek}>
+            <Waveform
+              positionMs={active ? positionMs : 0}
+              durationMs={active ? durationMs || track.durationMs : track.durationMs}
+              onSeek={async (ms) => {
+                // Start this track first; the player holds the seek until it has loaded.
+                if (!active) await play(track, related.length ? [track, ...related] : [track]);
+                void seek(ms);
+              }}
+            />
+          </View>
           <View style={styles.controls}>
             <PressableScale onPress={toggleShuffle} hitSlop={14}>
               <Icon name="shuffle" color={shuffle ? colors.accent2 : colors.muted} size={22} />
@@ -174,24 +178,44 @@ export default function TrackScreen() {
       <View style={styles.row}>
         <PressableScale
           onPress={async () => {
+            if (likeBusy.current) return;
+            likeBusy.current = true;
+            // Flip the heart at once; roll back only if the server says no.
+            const before = track;
+            const liked = !before.liked;
+            setLikeError(null);
+            setTrack({ ...before, liked, likeCount: Math.max(0, before.likeCount + (liked ? 1 : -1)) });
             try {
-              if (track.liked) await api.unlike(track.id);
-              else await api.like(track.id);
-              await load();
+              if (liked) await api.like(before.id);
+              else await api.unlike(before.id);
             } catch (err) {
-              Alert.alert(t.signInRequired, err instanceof Error ? err.message : t.likeFail);
+              setTrack(before);
+              setLikeError(err instanceof Error && err.message ? err.message : t.likeFail);
+            } finally {
+              likeBusy.current = false;
             }
-          }}>
-          <View style={styles.likeRow}>
-            <Icon
-              name={track.liked ? 'heartFilled' : 'heart'}
-              color={track.liked ? colors.accent2 : colors.text}
-              size={20}
-            />
-            <Text style={{ color: track.liked ? colors.accent2 : colors.text, fontWeight: '700' }}>
-              {track.likeCount}
-            </Text>
-          </View>
+          }}
+          scaleTo={0.94}
+          accessibilityRole="button"
+          accessibilityState={{ selected: track.liked }}
+          style={[
+            styles.like,
+            {
+              borderColor: track.liked ? colors.accent2 : colors.border,
+              backgroundColor: track.liked ? colors.cardAlt : 'transparent',
+            },
+          ]}>
+          <Icon
+            name={track.liked ? 'heartFilled' : 'heart'}
+            color={track.liked ? colors.accent2 : colors.text}
+            size={20}
+          />
+          <Text style={{ color: track.liked ? colors.accent2 : colors.text, fontWeight: '700' }}>
+            {track.liked ? t.likedShort : t.like}
+          </Text>
+          {track.likeCount > 0 ? (
+            <Text style={{ color: colors.muted, fontWeight: '600' }}>{track.likeCount}</Text>
+          ) : null}
         </PressableScale>
         <PressableScale
           onPress={() => {
@@ -210,6 +234,9 @@ export default function TrackScreen() {
           <Text style={{ color: colors.muted }}>{t.report}</Text>
         </PressableScale>
       </View>
+      {likeError ? (
+        <Text style={{ color: colors.danger, paddingHorizontal: 24, marginTop: -6 }}>{likeError}</Text>
+      ) : null}
       {track.status === 'ready' && track.audioUrl ? (
         <View style={{ gap: 10 }}>
           <PressableScale
@@ -264,15 +291,6 @@ export default function TrackScreen() {
           ))}
         </View>
       ) : null}
-      <View style={styles.block}>
-        <Text style={[styles.blockTitle, { color: colors.text }]}>{t.comments}</Text>
-        {commentsFor(track.id).map((item) => (
-          <View key={item.id} style={styles.comment}>
-            <Text style={{ color: colors.text, fontWeight: '700' }}>{item.author}</Text>
-            <Text style={{ color: colors.muted }}>{item.text}</Text>
-          </View>
-        ))}
-      </View>
     </ScrollView>
   );
 }
@@ -288,7 +306,16 @@ const styles = StyleSheet.create({
   meta: { paddingHorizontal: 24, gap: 4 },
   title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
   row: { flexDirection: 'row', gap: 18, paddingHorizontal: 24, alignItems: 'center' },
-  likeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  seek: { paddingHorizontal: 24 },
+  like: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -301,7 +328,6 @@ const styles = StyleSheet.create({
   block: { paddingHorizontal: 24, gap: 10, marginTop: 8 },
   blockTitle: { fontSize: 20, fontWeight: '800' },
   related: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
-  comment: { gap: 4, paddingVertical: 8 },
   download: {
     flexDirection: 'row',
     alignItems: 'center',

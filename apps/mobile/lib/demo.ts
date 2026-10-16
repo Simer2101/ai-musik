@@ -1,5 +1,5 @@
 import { DEFAULT_GENRE } from './wave';
-import type { Profile, Track, TrackComment } from './types';
+import type { Profile, Track } from './types';
 
 export const DEMO_EMAIL = 'demo@sonari.app';
 export const DEMO_NAME = 'Демо-слушатель';
@@ -36,7 +36,7 @@ const seedTracks: Track[] = [
     durationMs: 98000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
     coverUrl: null,
-    likeCount: 37,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 40000_000).toISOString(),
   }),
   track({
@@ -49,7 +49,7 @@ const seedTracks: Track[] = [
     genre: 'Поп',
     durationMs: 60000,
     coverUrl: null,
-    likeCount: 41,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 3600_000).toISOString(),
   }),
   track({
@@ -63,7 +63,7 @@ const seedTracks: Track[] = [
     durationMs: 70000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
     coverUrl: null,
-    likeCount: 22,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 9800_000).toISOString(),
   }),
   track({
@@ -77,7 +77,7 @@ const seedTracks: Track[] = [
     durationMs: 84000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
     coverUrl: null,
-    likeCount: 48,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 45000_000).toISOString(),
   }),
   track({
@@ -91,7 +91,7 @@ const seedTracks: Track[] = [
     durationMs: 80000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
     coverUrl: null,
-    likeCount: 14,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 5400_000).toISOString(),
   }),
   track({
@@ -105,7 +105,7 @@ const seedTracks: Track[] = [
     durationMs: 91000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3',
     coverUrl: null,
-    likeCount: 29,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 56000_000).toISOString(),
   }),
   track({
@@ -119,7 +119,7 @@ const seedTracks: Track[] = [
     durationMs: 88000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
     coverUrl: null,
-    likeCount: 56,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 26000_000).toISOString(),
   }),
   track({
@@ -133,7 +133,7 @@ const seedTracks: Track[] = [
     durationMs: 78000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
     coverUrl: null,
-    likeCount: 31,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 50000_000).toISOString(),
   }),
   track({
@@ -146,8 +146,8 @@ const seedTracks: Track[] = [
     genre: 'Электроника',
     durationMs: 45000,
     coverUrl: null,
-    likeCount: 18,
-    liked: true,
+    likeCount: 0,
+    liked: false,
     createdAt: new Date().toISOString(),
   }),
   track({
@@ -160,7 +160,7 @@ const seedTracks: Track[] = [
     genre: 'Электроника',
     durationMs: 90000,
     coverUrl: null,
-    likeCount: 27,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 7200_000).toISOString(),
   }),
   track({
@@ -174,7 +174,7 @@ const seedTracks: Track[] = [
     durationMs: 76000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
     coverUrl: null,
-    likeCount: 19,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 30000_000).toISOString(),
   }),
   track({
@@ -188,7 +188,7 @@ const seedTracks: Track[] = [
     durationMs: 72000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
     coverUrl: null,
-    likeCount: 17,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 52000_000).toISOString(),
   }),
   track({
@@ -202,7 +202,7 @@ const seedTracks: Track[] = [
     durationMs: 150000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
     coverUrl: null,
-    likeCount: 33,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 20000_000).toISOString(),
   }),
   track({
@@ -216,7 +216,7 @@ const seedTracks: Track[] = [
     durationMs: 104000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3',
     coverUrl: null,
-    likeCount: 21,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 60000_000).toISOString(),
   }),
   track({
@@ -230,7 +230,7 @@ const seedTracks: Track[] = [
     durationMs: 132000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3',
     coverUrl: null,
-    likeCount: 44,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 64000_000).toISOString(),
   }),
   track({
@@ -244,38 +244,13 @@ const seedTracks: Track[] = [
     durationMs: 110000,
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
     coverUrl: null,
-    likeCount: 11,
+    likeCount: 0,
     createdAt: new Date(Date.now() - 12000_000).toISOString(),
   }),
 ];
 
-const DEMO_COMMENTS: Record<string, TrackComment[]> = {
-  'demo-night-drive': [
-    { id: 'c1', author: 'Мира', text: 'Это как Яндекс.Волна, только всё своё.' },
-    { id: 'c2', author: 'Лев', text: 'Бас очень плотный. Кручу в машине.' },
-  ],
-  'demo-rain-lofi': [
-    { id: 'c3', author: 'Соня', text: 'Идеально под работу. Как фокус-волна.' },
-  ],
-  'demo-neon-rock': [
-    { id: 'c4', author: 'Искра', text: 'Гитара грязная в хорошем смысле.' },
-    { id: 'c5', author: 'Кирилл', text: 'Хочу такой же промпт себе.' },
-  ],
-  'demo-asphalt-96': [{ id: 'c6', author: 'Марк', text: 'Бит как с кассеты. Кручу по кругу.' }],
-  'demo-nocturne-c': [{ id: 'c7', author: 'Ева', text: 'Рояль очень чистый. Как зал без публики.' }],
-  'demo-still-air': [{ id: 'c8', author: 'Оля', text: 'Ни одного слова. Идеально под работу.' }],
-};
-
-export function commentsFor(trackId: string): TrackComment[] {
-  return (
-    DEMO_COMMENTS[trackId] ?? [
-      { id: `c-${trackId}`, author: 'Аня', text: 'Звучит свежо. Оставляю в избранном.' },
-    ]
-  );
-}
-
 const catalog = [...seedTracks];
-const likedIds = new Set<string>(['demo-night-drive']);
+const likedIds = new Set<string>();
 
 function withLikes(items: Track[]): Track[] {
   return items.map((item) => ({ ...item, liked: likedIds.has(item.id) }));

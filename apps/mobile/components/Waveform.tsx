@@ -5,10 +5,10 @@ import { Text } from '@/components/AppText';
 import { formatClock } from '@/lib/cover';
 import { useSettings } from '@/providers/SettingsProvider';
 
-const BARS = [10, 18, 12, 26, 16, 32, 20, 28, 11, 30, 17, 24, 9, 31, 14, 27, 19, 22, 13, 29, 15, 21, 12, 25, 18, 33, 14, 23];
+const BARS = [6, 11, 7, 15, 9, 18, 12, 16, 6, 17, 10, 14, 5, 18, 8, 16, 11, 13, 8, 17, 9, 12, 7, 15, 11, 19, 8, 13];
 const STEP_MS = 10000;
 /** Bar plus gap, in px: the bar count follows the width so the wave stays dense. */
-const PITCH = 6;
+const PITCH = 8;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -88,7 +88,7 @@ export function Waveform({
               style={[
                 styles.bar,
                 {
-                  height: scrub === null ? height : height + 2,
+                  height: scrub === null ? height : height + 1,
                   backgroundColor: active ? colors.accent : colors.muted,
                   opacity: active ? 1 : 0.35,
                 },
@@ -133,11 +133,12 @@ export function Waveform({
 }
 
 const styles = StyleSheet.create({
-  stack: { width: '100%', gap: 6 },
+  stack: { width: '100%', gap: 2 },
   inline: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 },
   bars: {
     alignSelf: 'stretch',
-    height: 40,
+    // Taller than the bars so the bar is still easy to grab with a finger.
+    height: 32,
     justifyContent: 'center',
     cursor: 'pointer',
   },
@@ -146,9 +147,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 40,
+    height: 32,
   },
-  bar: { width: 3, borderRadius: 2 },
+  bar: { width: 2, borderRadius: 1 },
   times: { flexDirection: 'row', justifyContent: 'space-between' },
   clock: { fontSize: 12, fontVariant: ['tabular-nums'] },
   clockInline: { fontSize: 11, width: 36 },

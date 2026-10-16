@@ -21,12 +21,6 @@ export type Track = {
   createdAt: string;
 };
 
-export type TrackComment = {
-  id: string;
-  author: string;
-  text: string;
-};
-
 export type Profile = {
   id: string;
   email?: string;
