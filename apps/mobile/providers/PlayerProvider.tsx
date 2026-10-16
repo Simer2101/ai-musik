@@ -1,6 +1,7 @@
-import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
+import { coverUri, trackTitle } from '@/lib/cover';
 import { shuffleTracks } from '@/lib/wave';
 import type { Track } from '@/lib/types';
 
@@ -26,7 +27,7 @@ type PlayerContextValue = {
 const PlayerContext = createContext<PlayerContextValue | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
   const trackRef = useRef<Track | null>(null);
   const queueRef = useRef<Track[]>([]);
   const shuffleRef = useRef(false);
@@ -44,16 +45,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [radio, setRadio] = useState(false);
 
   useEffect(() => {
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
-      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-      shouldDuckAndroid: true,
+    // Lock screen controls need 'doNotMix'; without them Android stops background audio after ~3 min.
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+      interruptionMode: 'doNotMix',
     }).catch(() => undefined);
 
     return () => {
-      soundRef.current?.unloadAsync().catch(() => undefined);
+      soundRef.current?.remove();
+      soundRef.current = null;
     };
   }, []);
 
@@ -64,28 +65,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const load = async (next: Track, shouldPlay = true) => {
     if (!next.audioUrl) throw new Error('Этот трек ещё не готов');
     if (soundRef.current) {
-      await soundRef.current.unloadAsync();
+      soundRef.current.remove();
       soundRef.current = null;
     }
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: next.audioUrl },
-      { shouldPlay, progressUpdateIntervalMillis: 400 },
-      (status) => {
-        if (!status.isLoaded) return;
-        setIsPlaying(status.isPlaying);
-        setPositionMs(status.positionMillis);
-        setDurationMs(status.durationMillis ?? next.durationMs);
-        if (status.didJustFinish) {
-          if (repeatRef.current) {
-            void sound.setPositionAsync(0);
-            void sound.playAsync();
-            return;
-          }
-          void step(1);
+    // expo-audio reports time in seconds; the rest of the app works in milliseconds.
+    const sound = createAudioPlayer({ uri: next.audioUrl }, { updateInterval: 400 });
+    sound.addListener('playbackStatusUpdate', (status) => {
+      if (!status.isLoaded) return;
+      setIsPlaying(status.playing);
+      setPositionMs(Math.round(status.currentTime * 1000));
+      setDurationMs(status.duration > 0 ? Math.round(status.duration * 1000) : next.durationMs);
+      if (status.didJustFinish) {
+        if (repeatRef.current) {
+          void sound.seekTo(0).then(() => sound.play());
+          return;
         }
+        void step(1);
       }
-    );
+    });
+    const artwork = coverUri(next);
+    sound.setActiveForLockScreen(true, {
+      title: trackTitle(next),
+      artist: next.authorName,
+      artworkUrl: artwork?.startsWith('http') ? artwork : undefined,
+    });
+    if (shouldPlay) sound.play();
     soundRef.current = sound;
+    setPositionMs(0);
+    setDurationMs(next.durationMs);
     trackRef.current = next;
     setTrack(next);
     setIsPlaying(shouldPlay);
@@ -142,21 +149,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           if (trackRef.current?.audioUrl) await load(trackRef.current, true);
           return;
         }
-        const status = await soundRef.current.getStatusAsync();
-        if (!status.isLoaded) {
-          if (trackRef.current?.audioUrl) await load(trackRef.current, true);
-          return;
-        }
-        if (status.isPlaying) await soundRef.current.pauseAsync();
-        else await soundRef.current.playAsync();
+        if (soundRef.current.playing) soundRef.current.pause();
+        else soundRef.current.play();
       },
       seek: async (ms) => {
-        await soundRef.current?.setPositionAsync(ms);
+        await soundRef.current?.seekTo(ms / 1000);
       },
       next: async () => step(1),
       prev: async () => {
         if (positionMs > 4000) {
-          await soundRef.current?.setPositionAsync(0);
+          await soundRef.current?.seekTo(0);
           return;
         }
         await step(-1);

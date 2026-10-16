@@ -19,7 +19,6 @@ type TokensContextValue = Wallet & {
   spend: (amount: number) => boolean;
   refund: (amount: number) => void;
   subscribe: (planId: PaidPlanId) => { tokens: number; priceRub: number };
-  removeAds: () => void;
 };
 
 const TokensContext = createContext<TokensContextValue | undefined>(undefined);
@@ -44,7 +43,9 @@ function readWallet(): Wallet {
     const raw = readStored();
     if (!raw) return freeWallet();
     const parsed = JSON.parse(raw) as Partial<Wallet>;
-    const adFree = parsed.adFree === true;
+    // Premium used to switch on with a tap and no payment, so a stored flag proves nothing.
+    // Until store payments are wired, nobody is ad-free.
+    const adFree = false;
     if (isPaidPlanId(parsed.planId)) {
       return {
         balance: Number(parsed.balance) || 0,
@@ -106,9 +107,6 @@ export function TokensProvider({ children }: { children: ReactNode }) {
         commit({ balance: plan.tokens, planId, freeClaimed: true, adFree: wallet.adFree });
         setNotice(`granted:${plan.tokens}`);
         return { tokens: plan.tokens, priceRub: plan.priceRub };
-      },
-      removeAds: () => {
-        commit({ ...wallet, adFree: true });
       },
     }),
     [notice, wallet]

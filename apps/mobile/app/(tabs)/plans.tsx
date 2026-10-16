@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
@@ -66,7 +67,13 @@ function PerksPanel() {
 
 export default function PlansScreen() {
   const { colors, t, language, themeName } = useSettings();
-  const { adFree, removeAds } = useTokens();
+  const { adFree } = useTokens();
+  // Store payments are not wired yet: the buttons explain that instead of granting Premium.
+  const [paymentSoon, setPaymentSoon] = useState(false);
+  const removeAds = () => setPaymentSoon(true);
+  const soonNote = paymentSoon ? (
+    <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>{t.planPaymentSoon}</Text>
+  ) : null;
   const locale = language === 'en' ? 'en-US' : 'ru-RU';
   const price = t.planPerMonth.replace('{price}', AD_FREE_PRICE_RUB.toLocaleString(locale));
   const cta = adFree ? t.planRenew : t.plansStart;
@@ -111,6 +118,7 @@ export default function PlansScreen() {
                 style={[styles.wideCta, { backgroundColor: colors.accent }]}>
                 <Text style={[styles.ctaText, { color: colors.buttonText }]}>{cta}</Text>
               </PressableScale>
+              {soonNote}
             </View>
           </View>
 
@@ -134,6 +142,7 @@ export default function PlansScreen() {
               <PressableScale onPress={removeAds} style={[styles.cta, { backgroundColor: colors.accent, marginTop: 'auto' }]}>
                 <Text style={[styles.ctaText, { color: colors.buttonText }]}>{cta}</Text>
               </PressableScale>
+              {soonNote}
             </View>
 
             <View style={[styles.card, styles.widePerks, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -173,6 +182,7 @@ export default function PlansScreen() {
               ]}>
               <Text style={[styles.ctaText, { color: lightCta ? '#000000' : colors.card }]}>{cta}</Text>
             </PressableScale>
+            {soonNote}
 
             <Text style={[styles.section, { color: colors.text }]}>{t.plansAvailable}</Text>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
@@ -192,6 +202,7 @@ export default function PlansScreen() {
                 style={[styles.cta, { backgroundColor: colors.success }]}>
                 <Text style={[styles.ctaText, { color: colors.buttonText }]}>{cta}</Text>
               </PressableScale>
+              {soonNote}
             </View>
 
             <View style={[styles.card, { backgroundColor: colors.card }]}>

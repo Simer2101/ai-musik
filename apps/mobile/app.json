@@ -9,11 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sonari.app",
-      "infoPlist": {
-        "UIBackgroundModes": ["audio"],
-        "NSMicrophoneUsageDescription": "Sonari does not record audio. This key is unused."
-      }
+      "bundleIdentifier": "com.sonari.app"
     },
     "android": {
       "package": "com.sonari.app",
@@ -24,8 +20,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["FOREGROUND_SERVICE", "FOREGROUND_SERVICE_MEDIA_PLAYBACK"],
-      "usesCleartextTraffic": true
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -43,13 +40,21 @@
         }
       ],
       "expo-secure-store",
-      "expo-av",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ],
       [
         "expo-image-picker",
         {
           "photosPermission": "Sonari uses your photos only to set a profile picture."
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
