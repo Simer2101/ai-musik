@@ -27,7 +27,7 @@ const HERO_COVERS = [
 
 type PerkTileProps = { icon: IconName; title: string; text: string };
 
-// "What Premium gives": one violet headline tile for ad-free listening, plus smaller perk tiles.
+// "What Premium gives": one lime headline tile for ad-free listening, plus smaller perk tiles.
 function PerksPanel() {
   const { colors, t } = useSettings();
   const tint = `${colors.accent}1f`;
@@ -46,7 +46,7 @@ function PerksPanel() {
 
   return (
     <View style={styles.perkLayout}>
-      <View style={[styles.perkHero, { backgroundColor: colors.accent2 }]}>
+      <View style={[styles.perkHero, { backgroundColor: colors.accent }]}>
         <Icon name="speaker" color={colors.buttonText} size={36} />
         <View style={{ gap: 8 }}>
           <Text style={[fonts.display('800'), { color: colors.buttonText, fontSize: 22, lineHeight: 26, letterSpacing: -0.4 }]}>

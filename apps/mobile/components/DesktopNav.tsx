@@ -33,7 +33,7 @@ export function DesktopNav() {
   return (
     <View style={[styles.side, { backgroundColor: colors.hero, marginBottom: track ? PLAYER_HEIGHT + 16 : 8 }]}>
       <Text style={[styles.logo, fonts.display('800'), { color: colors.text }]}>
-        Son<Text style={[fonts.display('800'), { color: colors.accent2 }]}>ari</Text>
+        Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
       </Text>
       <View style={styles.items}>
         {items.map((item) => {

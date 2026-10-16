@@ -18,7 +18,7 @@
     "android": {
       "package": "com.sonari.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0a0a0c",
+        "backgroundColor": "#0b0b0d",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -39,7 +39,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#0a0a0c"
+          "backgroundColor": "#0b0b0d"
         }
       ],
       "expo-secure-store",
