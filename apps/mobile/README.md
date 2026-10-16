@@ -1,4 +1,4 @@
-# AImusik mobile
+# Sonari mobile
 
 ```bash
 cp .env.example .env

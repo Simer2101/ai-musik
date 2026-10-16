@@ -27,7 +27,7 @@ app.use(
 app.get("/health", (c) =>
   c.json({
     ok: true,
-    service: "aimusik-api",
+    service: "sonari-api",
     supabase: isConfigured.supabase,
     github: isConfigured.github,
     telegram: isConfigured.telegram,
@@ -131,7 +131,7 @@ app.post("/v1/auth/telegram", async (c) => {
     return c.json({ error: "Telegram signature check failed" }, 401);
   }
 
-  const email = `tg${data.id}@telegram.aimusik.app`;
+  const email = `tg${data.id}@telegram.sonari.app`;
   const displayName = [data.first_name, data.last_name].filter(Boolean).join(" ") || data.username || "Telegram";
   const created = await supabaseAdmin.auth.admin.createUser({
     email,
@@ -156,7 +156,7 @@ app.get("/v1/me", async (c) => {
   if (!isConfigured.supabase) {
     return c.json({
       id: "demo-user",
-      email: "demo@aimusik.app",
+      email: "demo@sonari.app",
       displayName: "Демо-слушатель",
       avatarUrl: null,
     });
@@ -280,5 +280,5 @@ app.delete("/v1/me", async (c) => {
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
 serve({ fetch: app.fetch, port: config.port }, (info) => {
-  console.log(`AImusik API listening on http://localhost:${info.port}`);
+  console.log(`Sonari API listening on http://localhost:${info.port}`);
 });

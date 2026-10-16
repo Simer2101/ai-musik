@@ -1,4 +1,4 @@
--- AImusik schema: profiles, tracks, likes, reports + RLS.
+-- Sonari schema: profiles, tracks, likes, reports + RLS.
 -- Run in the Supabase SQL editor after creating the project.
 
 create extension if not exists "pgcrypto";

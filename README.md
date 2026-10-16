@@ -1,4 +1,4 @@
-﻿# AImusik
+﻿# Sonari
 
 Mobile app for listening to AI music from the in-app catalog. Users cannot create or upload tracks.
 

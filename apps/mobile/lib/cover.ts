@@ -52,7 +52,7 @@ const PALETTES = [
 ];
 
 export function trackTitle(track: Track) {
-  return track.title || track.genre || 'AImusik';
+  return track.title || track.genre || 'Sonari';
 }
 
 export function coverColors(id: string): [string, string] {

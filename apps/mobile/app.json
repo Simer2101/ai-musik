@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "AImusik",
-    "slug": "aimusik",
+    "name": "Sonari",
+    "slug": "sonari",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "aimusik",
+    "scheme": "sonari",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.aimusik.app",
+      "bundleIdentifier": "com.sonari.app",
       "infoPlist": {
         "UIBackgroundModes": ["audio"],
-        "NSMicrophoneUsageDescription": "AImusik does not record audio. This key is unused."
+        "NSMicrophoneUsageDescription": "Sonari does not record audio. This key is unused."
       }
     },
     "android": {
-      "package": "com.aimusik.app",
+      "package": "com.sonari.app",
       "adaptiveIcon": {
         "backgroundColor": "#0b0b0d",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -47,7 +47,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "AImusik uses your photos only to set a profile picture."
+          "photosPermission": "Sonari uses your photos only to set a profile picture."
         }
       ]
     ],

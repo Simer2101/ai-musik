@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AImusik — вход через Telegram</title>
+    <title>Sonari — вход через Telegram</title>
     <style>
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #0b0b0d; color: #f3f3f0; }
       a { color: #c6f432; }
     </style>
   </head>
   <body>
-    <p>Возвращаемся в AImusik… <a id="open" href="aimusik://auth">Открыть приложение</a></p>
+    <p>Возвращаемся в Sonari… <a id="open" href="sonari://auth">Открыть приложение</a></p>
     <script>
       // Telegram returns here with #tgAuthResult=…; hand it to the phone app.
-      var target = 'aimusik://auth' + window.location.hash;
+      var target = 'sonari://auth' + window.location.hash;
       document.getElementById('open').href = target;
       window.location.replace(target);
     </script>

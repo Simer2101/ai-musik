@@ -39,7 +39,7 @@ export function TrackCover({
     return (
       <View style={frame}>
         <img
-          className="aimusik-cover"
+          className="sonari-cover"
           src={webUri}
           alt=""
           style={{

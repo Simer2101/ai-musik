@@ -36,7 +36,7 @@ function required(name: string, fallback?: string): string {
 
 export const config = {
   port: Number(process.env.PORT ?? 8787),
-  publicAppUrl: process.env.PUBLIC_APP_URL ?? "https://aimusik.app",
+  publicAppUrl: process.env.PUBLIC_APP_URL ?? "https://sonari.app",
   supabaseUrl: required("SUPABASE_URL", "https://placeholder.supabase.co"),
   supabaseAnonKey: required("SUPABASE_ANON_KEY", "placeholder-anon-key"),
   supabaseServiceRoleKey: required(

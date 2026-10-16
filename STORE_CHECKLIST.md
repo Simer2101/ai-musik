@@ -13,7 +13,7 @@ Use this after the app builds and the API is live.
 
 ## Android
 
-1. Create the app in Play Console: name **AImusik**, package `com.aimusik.app`, category Music & Audio.
+1. Create the app in Play Console: name **Sonari**, package `com.sonari.app`, category Music & Audio.
 2. Complete content rating, data safety, target audience 13+, and declare that the app plays AI-generated music.
 3. Add 512 icon, 1024×500 feature graphic, phone screenshots.
 4. Point privacy policy to `https://YOUR_DOMAIN/privacy.html`.
@@ -28,7 +28,7 @@ npx eas submit --platform android
 
 ## iPhone
 
-1. Create the app in App Store Connect, bundle id `com.aimusik.app`.
+1. Create the app in App Store Connect, bundle id `com.sonari.app`.
 2. Mac is not required. EAS builds the `.ipa` in the cloud.
 3. From `apps/mobile`:
 

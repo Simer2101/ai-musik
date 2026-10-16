@@ -116,7 +116,7 @@ export default function PlansScreen() {
 
           <View style={styles.wideBody}>
             <View style={[styles.card, styles.widePlan, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.brand, { color: colors.muted }]}>AImusik</Text>
+              <Text style={[styles.brand, { color: colors.muted }]}>Sonari</Text>
               <Text style={[fonts.display('700'), { color: colors.accent, fontSize: 30, lineHeight: 36 }]}>
                 {t.planAdFreeName}
               </Text>
@@ -176,7 +176,7 @@ export default function PlansScreen() {
 
             <Text style={[styles.section, { color: colors.text }]}>{t.plansAvailable}</Text>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.brand, { color: colors.muted }]}>AImusik</Text>
+              <Text style={[styles.brand, { color: colors.muted }]}>Sonari</Text>
               <Text style={[styles.planName, { color: colors.success }]}>{t.planAdFreeName}</Text>
               <Text style={[styles.price, { color: colors.muted }]}>{price}</Text>
               <View style={styles.bullets}>

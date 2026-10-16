@@ -32,7 +32,7 @@ const responsiveBackground = `
 body {
   background-color: #0b0b0d;
 }
-img.aimusik-cover {
+img.sonari-cover {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;

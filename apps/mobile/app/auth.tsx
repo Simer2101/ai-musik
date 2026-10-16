@@ -76,7 +76,7 @@ export default function AuthScreen() {
       window.location.href = telegramAuthUrl(`${window.location.origin}/auth`);
       return;
     }
-    const result = await WebBrowser.openAuthSessionAsync(telegramAuthUrl(TELEGRAM_CALLBACK_URL), 'aimusik://auth');
+    const result = await WebBrowser.openAuthSessionAsync(telegramAuthUrl(TELEGRAM_CALLBACK_URL), 'sonari://auth');
     if (result.type !== 'success') return;
     const data = readTelegramResult(result.url);
     if (data) await finishTelegram(data);

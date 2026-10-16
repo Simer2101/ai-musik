@@ -1,4 +1,4 @@
-# AImusik API
+# Sonari API
 
 Hono server that serves the AI music catalog, likes and reports from Supabase.
 

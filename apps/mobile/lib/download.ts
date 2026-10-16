@@ -4,7 +4,7 @@ import { trackTitle } from './cover';
 import type { Track } from './types';
 
 function fileName(track: Track) {
-  const base = trackTitle(track).replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'AImusik';
+  const base = trackTitle(track).replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'Sonari';
   return `${base}.mp3`;
 }
 

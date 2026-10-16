@@ -243,7 +243,7 @@ export default function ListenScreen() {
           <>
             <View style={styles.header}>
               <Text style={[fonts.display('800'), { color: colors.text, fontSize: 22, letterSpacing: -0.4 }]}>
-                AI<Text style={[fonts.display('800'), { color: colors.accent }]}>musik</Text>
+                Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
               </Text>
               <View style={styles.headerRight}>
                 <PressableScale

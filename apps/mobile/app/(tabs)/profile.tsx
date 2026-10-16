@@ -160,7 +160,7 @@ export default function ProfileScreen() {
   // Phone sign-ins show the number; Telegram sign-ins have only an internal address, so nothing.
   const contact = user.phone
     ? { label: t.fieldPhone, value: formatPhone(`+${user.phone.replace(/^\+/, '')}`) }
-    : user.email && !user.email.endsWith('@telegram.aimusik.app')
+    : user.email && !user.email.endsWith('@telegram.sonari.app')
       ? { label: t.fieldEmail, value: user.email }
       : null;
 
