@@ -9,7 +9,7 @@ Use this after the app builds and the API is live.
 - [ ] In `apps/mobile` run `eas init` and paste the project ID into `app.json` → `extra.eas.projectId`
 - [ ] Google Play Console ($25 one-time)
 - [ ] Apple Developer Program ($99 / year)
-- [ ] Public privacy policy URL. In the GitHub repo: Settings → Pages → Deploy from branch `master` / folder `/site`, or drop `site/` onto Cloudflare Pages.
+- [ ] Public privacy policy URL. In the GitHub repo: publish the `site/` folder with Cloudflare Pages or a GitHub Pages Actions workflow (branch deploys only serve `/` or `/docs`).
 
 ## Android
 

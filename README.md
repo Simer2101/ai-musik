@@ -4,7 +4,7 @@ Mobile app for listening to AI music from the in-app catalog. Users cannot creat
 
 ## Stack
 
-- Expo / React Native (`apps/mobile`) for iPhone and Android
+- Expo / React Native (`apps/mobile`) for iPhone, Android and web
 - Hono API (`apps/api`) for the catalog, likes, reports
 - Supabase for auth, Postgres, Storage
 - Expo EAS for store builds
@@ -12,11 +12,21 @@ Mobile app for listening to AI music from the in-app catalog. Users cannot creat
 
 ## Layout
 
-- `apps/mobile` Expo app
-- `apps/api` Catalog API
-- `supabase` SQL for tables, RLS, storage
-- `site` Privacy, Terms, landing
-- `STORE_CHECKLIST.md` App Store and Google Play steps
+```
+apps/
+  mobile/        Expo app
+    app/           screens (Expo Router)
+    components/    shared UI
+    providers/     auth, player, profile, settings, tokens
+    lib/           API client, catalog, i18n, helpers
+    constants/     colors and fonts
+    assets/        icons, splash, demo covers
+  api/           Catalog API (Hono)
+catalog/         tracks.json plus audio/ and covers/ served by the API
+supabase/        SQL for tables, RLS, storage
+site/            Landing, Privacy, Terms, Telegram login callback
+STORE_CHECKLIST.md   App Store and Google Play steps
+```
 
 ## First-time setup
 
@@ -32,10 +42,18 @@ npm install
 npm run dev
 
 cd apps/mobile
+npm install
 npx expo start
 ```
 
 On a physical phone set `EXPO_PUBLIC_API_URL` to your computer LAN IP, not localhost.
+
+Typecheck before committing:
+
+```bash
+cd apps/api && npm run typecheck
+cd apps/mobile && npx tsc --noEmit
+```
 
 ## Host API on Railway
 
@@ -44,7 +62,7 @@ On a physical phone set `EXPO_PUBLIC_API_URL` to your computer LAN IP, not local
 3. Add env vars from `.env.example`.
 4. Put the Railway HTTPS URL into `EXPO_PUBLIC_API_URL`.
 
-Privacy pages: enable GitHub Pages for the `site/` folder.
+Privacy pages: publish the `site/` folder with Cloudflare Pages or a GitHub Pages Actions workflow.
 
 ## Publish to stores
 
