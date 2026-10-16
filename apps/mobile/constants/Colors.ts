@@ -17,14 +17,14 @@ export type ThemeColors = {
 };
 
 export const palettes: Record<ThemeName, ThemeColors> = {
-  // Black and white with a soft blue accent and a soft violet second accent.
+  // Black and white with a soft rose accent and a soft violet second accent.
   dark: {
     bg: '#0a0a0c',
     card: '#141418',
     cardAlt: '#1b1b21',
     text: '#f5f5f7',
     muted: '#8f8f9a',
-    accent: '#9cc9ff',
+    accent: '#f5b3d7',
     accent2: '#c3b4ff',
     danger: '#ff6b81',
     border: '#24242b',
@@ -38,7 +38,7 @@ export const palettes: Record<ThemeName, ThemeColors> = {
     cardAlt: '#ececf1',
     text: '#111114',
     muted: '#63636d',
-    accent: '#2d63c8',
+    accent: '#b8336f',
     accent2: '#6e52d6',
     danger: '#be123c',
     border: '#e2e2e8',
@@ -63,7 +63,7 @@ export function mixHex(from: string, to: string, t: number) {
 type Surface = Pick<ThemeColors, 'bg' | 'card' | 'cardAlt' | 'border' | 'hero'>;
 
 // Surfaces only retune the backgrounds; text and accents stay the same in every variant.
-// Every tone is a near-black neutral, indigo or violet so it sits well with the blue and violet accents.
+// Every tone is a near-black neutral, indigo or violet so it sits well with the rose and violet accents.
 // The ids are kept from earlier palettes so saved settings still load.
 const SURFACES: Record<BackgroundId, Record<ThemeName, Surface>> = {
   classic: {

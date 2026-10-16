@@ -72,7 +72,7 @@ function WaveCard({ desktop, onStart, onMood }: { desktop: boolean; onStart: () 
             flex: 1,
             height: height * scale,
             borderRadius: desktop ? 3 : 2,
-            // Lit bars fade from the blue accent into the violet one.
+            // Lit bars fade from the rose accent into the violet one.
             backgroundColor: index < LIT_BARS ? mixHex(colors.accent, colors.accent2, index / (LIT_BARS - 1)) : colors.border,
           }}
         />
