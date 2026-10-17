@@ -9,7 +9,7 @@ import { Logo } from '@/components/Logo';
 import { PressableScale } from '@/components/PressableScale';
 import { fonts } from '@/constants/Fonts';
 import { formatPhone, normalizePhone } from '@/lib/phone';
-import { supabaseConfigured } from '@/lib/supabase';
+import { apiConfigured } from '@/lib/api';
 import {
   readTelegramResult,
   TELEGRAM_CALLBACK_URL,
@@ -72,7 +72,7 @@ export default function AuthScreen() {
   }, [resendLeft]);
 
   const startTelegram = async () => {
-    if (!telegramConfigured || !supabaseConfigured) return finishTelegram(null);
+    if (!telegramConfigured || !apiConfigured) return finishTelegram(null);
     if (Platform.OS === 'web') {
       window.location.href = telegramAuthUrl(`${window.location.origin}/auth`);
       return;
@@ -222,7 +222,7 @@ export default function AuthScreen() {
 
         {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
 
-        {supabaseConfigured ? null : (
+        {apiConfigured ? null : (
           <View style={[styles.demo, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>{t.authDemoMode}</Text>
             <Text

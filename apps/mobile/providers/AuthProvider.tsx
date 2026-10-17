@@ -1,21 +1,25 @@
-import { User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import { api } from '@/lib/api';
-import { DEMO_EMAIL, DEMO_NAME, DEMO_SESSION_KEY, DEMO_USER_ID } from '@/lib/demo';
-import { supabase, supabaseConfigured } from '@/lib/supabase';
+import { api, apiConfigured, setDemoMode, type SignInResult } from '@/lib/api';
+import { DEMO_NAME, DEMO_SESSION_KEY, DEMO_USER_ID } from '@/lib/demo';
+import { getSessionToken, setSessionToken } from '@/lib/session';
 import type { TelegramAuthData } from '@/lib/telegram';
+import type { Profile } from '@/lib/types';
 
-export const demoUser = {
+export type AuthUser = Profile;
+
+export const demoUser: AuthUser = {
   id: DEMO_USER_ID,
-  email: DEMO_EMAIL,
-  user_metadata: { display_name: DEMO_NAME },
-} as unknown as User;
+  displayName: DEMO_NAME,
+  avatarUrl: null,
+  phone: null,
+  telegramUsername: null,
+};
 
 type AuthContextValue = {
   session: { access_token: string } | null;
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   isDemo: boolean;
   /** Sends a one-time SMS code; `phone` is in E.164 form, e.g. +79001234567. */
@@ -31,6 +35,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function persistDemo(on: boolean) {
+  setDemoMode(on);
   if (Platform.OS !== 'web' || typeof localStorage === 'undefined') return;
   if (on) localStorage.setItem(DEMO_SESSION_KEY, '1');
   else localStorage.removeItem(DEMO_SESSION_KEY);
@@ -42,9 +47,9 @@ function readDemo() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(supabaseConfigured ? null : demoUser);
-  const [isDemo, setIsDemo] = useState(!supabaseConfigured);
-  const [loading, setLoading] = useState(supabaseConfigured);
+  const [user, setUser] = useState<AuthUser | null>(apiConfigured ? null : demoUser);
+  const [isDemo, setIsDemo] = useState(!apiConfigured);
+  const [loading, setLoading] = useState(apiConfigured);
 
   const enterDemo = () => {
     setUser(demoUser);
@@ -52,37 +57,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persistDemo(true);
   };
 
+  const signedIn = async ({ token, user: account }: SignInResult) => {
+    await setSessionToken(token);
+    persistDemo(false);
+    setIsDemo(false);
+    setUser(account);
+  };
+
   useEffect(() => {
-    if (readDemo() || !supabaseConfigured) {
+    if (readDemo() || !apiConfigured) {
       enterDemo();
       setLoading(false);
       return;
     }
 
+    // A saved token is checked against the API once at start; a dead one is dropped.
     let cancelled = false;
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (cancelled) return;
-        if (data.session?.user) setUser(data.session.user);
-        else enterDemo();
-        setLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        enterDemo();
-        setLoading(false);
-      });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (next?.user) {
-        setUser(next.user);
-        setIsDemo(false);
+    (async () => {
+      const token = await getSessionToken();
+      if (!token) return enterDemo();
+      try {
+        const account = await api.me();
+        if (!cancelled) {
+          setUser(account);
+          setIsDemo(false);
+        }
+      } catch (err) {
+        if (err instanceof Error && /unauthorized/i.test(err.message)) await setSessionToken(null);
+        if (!cancelled) enterDemo();
       }
+    })().finally(() => {
+      if (!cancelled) setLoading(false);
     });
     return () => {
       cancelled = true;
-      data.subscription.unsubscribe();
     };
   }, []);
 
@@ -93,35 +101,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isDemo,
       enterDemo,
-      // Without Supabase the app runs in demo mode: any number and any 6-digit code sign in.
+      // Without an API the app runs in demo mode: any number and any 6-digit code sign in.
       sendPhoneCode: async (phone) => {
-        if (!supabaseConfigured) return;
-        const { error } = await supabase.auth.signInWithOtp({ phone });
-        if (error) throw error;
+        if (!apiConfigured) return;
+        await api.sendPhoneCode(phone);
       },
       verifyPhoneCode: async (phone, code) => {
-        if (!supabaseConfigured) {
+        if (!apiConfigured) {
           if (!/^\d{6}$/.test(code)) throw new Error('Invalid code');
           enterDemo();
           return;
         }
-        const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
-        if (error) throw error;
+        await signedIn(await api.verifyPhoneCode(phone, code));
       },
       signInWithTelegram: async (data) => {
-        if (!supabaseConfigured || !data) {
+        if (!apiConfigured || !data) {
           enterDemo();
           return;
         }
-        const { tokenHash } = await api.telegramLogin(data);
-        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'magiclink' });
-        if (error) throw error;
+        await signedIn(await api.telegramLogin(data));
       },
       signOut: async () => {
+        if (!isDemo) await api.logout().catch(() => undefined);
+        await setSessionToken(null);
         persistDemo(false);
         setIsDemo(false);
         setUser(null);
-        if (supabaseConfigured) await supabase.auth.signOut();
       },
     }),
     [isDemo, loading, user]

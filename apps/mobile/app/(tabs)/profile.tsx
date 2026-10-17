@@ -157,11 +157,11 @@ export default function ProfileScreen() {
   }
 
   const field = [styles.input, { backgroundColor: colors.cardAlt, color: colors.text }];
-  // Phone sign-ins show the number; Telegram sign-ins have only an internal address, so nothing.
+  // Phone sign-ins show the number, Telegram sign-ins the @username when there is one.
   const contact = user.phone
     ? { label: t.fieldPhone, value: formatPhone(`+${user.phone.replace(/^\+/, '')}`) }
-    : user.email && !user.email.endsWith('@telegram.sonari.app')
-      ? { label: t.fieldEmail, value: user.email }
+    : user.telegramUsername
+      ? { label: 'Telegram', value: `@${user.telegramUsername}` }
       : null;
 
   return (

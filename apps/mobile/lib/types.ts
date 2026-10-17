@@ -21,9 +21,13 @@ export type Track = {
   createdAt: string;
 };
 
+/** The signed-in account as our API returns it. */
 export type Profile = {
   id: string;
-  email?: string;
   displayName: string;
   avatarUrl: string | null;
+  /** E.164, set for phone sign-ins. */
+  phone?: string | null;
+  /** Without the @, set for Telegram sign-ins that have a username. */
+  telegramUsername?: string | null;
 };

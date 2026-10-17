@@ -258,7 +258,6 @@ function withLikes(items: Track[]): Track[] {
 
 export const demoProfile: Profile = {
   id: DEMO_USER_ID,
-  email: DEMO_EMAIL,
   displayName: DEMO_NAME,
   avatarUrl: null,
 };

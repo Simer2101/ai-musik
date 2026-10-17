@@ -1,22 +1,5 @@
-import { publicUrl, supabaseAdmin } from "./supabase.js";
-
-export type TrackRow = {
-  id: string;
-  user_id: string;
-  prompt: string;
-  genre: string | null;
-  duration_ms: number;
-  instrumental: boolean;
-  status: "queued" | "generating" | "ready" | "failed";
-  error_message: string | null;
-  audio_path: string | null;
-  cover_path: string | null;
-  is_public: boolean;
-  like_count: number;
-  created_at: string;
-  updated_at: string;
-  profiles?: { display_name: string; avatar_url: string | null } | null;
-};
+import { isConfigured } from "../config.js";
+import { query } from "./db.js";
 
 export type TrackDto = {
   id: string;
@@ -27,7 +10,7 @@ export type TrackDto = {
   genre: string | null;
   durationMs: number;
   instrumental: boolean;
-  status: TrackRow["status"];
+  status: "queued" | "generating" | "ready" | "failed";
   errorMessage: string | null;
   audioUrl: string | null;
   coverUrl: string | null;
@@ -38,37 +21,39 @@ export type TrackDto = {
   createdAt: string;
 };
 
-export function toTrackDto(row: TrackRow, liked = false): TrackDto {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    authorName: row.profiles?.display_name ?? "Listener",
-    title: row.prompt,
-    prompt: row.prompt,
-    genre: row.genre,
-    durationMs: row.duration_ms,
-    instrumental: row.instrumental,
-    status: row.status,
-    errorMessage: row.error_message,
-    audioUrl: publicUrl("tracks", row.audio_path),
-    coverUrl: publicUrl("covers", row.cover_path),
-    isPublic: row.is_public,
-    likeCount: row.like_count,
-    liked,
-    aiGenerated: true,
-    createdAt: row.created_at,
-  };
+/**
+ * Puts live like counts and this listener's hearts onto catalog tracks. Without a database
+ * the catalog is returned as it is.
+ */
+export async function withLikes<T extends TrackDto>(tracks: T[], userId?: string): Promise<T[]> {
+  if (!isConfigured.database || tracks.length === 0) return tracks;
+  const ids = tracks.map((track) => track.id);
+  const [counts, mine] = await Promise.all([
+    query<{ track_id: string; n: string }>(
+      "select track_id, count(*) as n from likes where track_id = any($1) group by track_id",
+      [ids]
+    ),
+    userId
+      ? query<{ track_id: string }>(
+          "select track_id from likes where user_id = $1 and track_id = any($2)",
+          [userId, ids]
+        )
+      : Promise.resolve({ rows: [] as { track_id: string }[] }),
+  ]);
+  const count = new Map(counts.rows.map((row) => [row.track_id, Number(row.n)]));
+  const liked = new Set(mine.rows.map((row) => row.track_id));
+  return tracks.map((track) => ({
+    ...track,
+    likeCount: count.get(track.id) ?? 0,
+    liked: liked.has(track.id),
+  }));
 }
 
-export async function likedTrackIds(userId: string | undefined, trackIds: string[]) {
-  if (!userId || trackIds.length === 0) return new Set<string>();
-  const { data } = await supabaseAdmin
-    .from("likes")
-    .select("track_id")
-    .eq("user_id", userId)
-    .in("track_id", trackIds);
-  return new Set((data ?? []).map((row) => row.track_id as string));
+/** This listener's liked track ids, newest first. */
+export async function likedIds(userId: string) {
+  const { rows } = await query<{ track_id: string }>(
+    "select track_id from likes where user_id = $1 order by created_at desc",
+    [userId]
+  );
+  return rows.map((row) => row.track_id);
 }
-
-export const TRACK_SELECT =
-  "id, user_id, prompt, genre, duration_ms, instrumental, status, error_message, audio_path, cover_path, is_public, like_count, created_at, updated_at, profiles(display_name, avatar_url)";

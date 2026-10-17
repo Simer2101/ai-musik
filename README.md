@@ -5,10 +5,11 @@ Mobile app for listening to AI music from the in-app catalog. Users cannot creat
 ## Stack
 
 - Expo / React Native (`apps/mobile`) for iPhone, Android and web
-- Hono API (`apps/api`) for the catalog, likes, reports
-- Supabase for auth, Postgres, Storage
+- Hono API (`apps/api`) for the catalog, sign-in, likes, reports
+- PostgreSQL for accounts, sessions, likes, reports
+- Timeweb Cloud for hosting the API and the database
+- sms.ru for sign-in codes, Telegram for Telegram sign-in
 - Expo EAS for store builds
-- Railway for API hosting
 
 ## Layout
 
@@ -21,18 +22,17 @@ apps/
     lib/           API client, catalog, i18n, helpers
     constants/     colors and fonts
     assets/        icons, splash, demo covers
-  api/           Catalog API (Hono)
+  api/           API (Hono)
+    db/            schema.sql, applied automatically on start
 catalog/         tracks.json plus audio/ and covers/ served by the API
-supabase/        SQL for tables, RLS, storage
 site/            Landing, Privacy, Terms, Telegram login callback
 STORE_CHECKLIST.md   App Store and Google Play steps
 ```
 
 ## First-time setup
 
-1. Create a Supabase project.
-2. Run `supabase/schema.sql` then `supabase/storage.sql` in the SQL editor.
-3. Copy `.env.example` to `apps/api/.env` and `apps/mobile/.env`.
+1. Copy `apps/api/.env.example` to `apps/api/.env` and `apps/mobile/.env.example` to `apps/mobile/.env`.
+2. Point `DATABASE_URL` at a PostgreSQL database. Tables are created when the API starts.
 
 ## Run locally
 
@@ -55,14 +55,12 @@ cd apps/api && npm run typecheck
 cd apps/mobile && npx tsc --noEmit
 ```
 
-## Host API on Railway
+## Host on Timeweb Cloud
 
-1. Create a Railway project from this GitHub repo.
-2. Set the root directory to `apps/api`.
-3. Add env vars from `.env.example`.
-4. Put the Railway HTTPS URL into `EXPO_PUBLIC_API_URL`.
+See `apps/api/README.md`: a managed PostgreSQL and an App Platform backend built from
+`apps/api`. Put the app's HTTPS address into `EXPO_PUBLIC_API_URL`.
 
-Privacy pages: publish the `site/` folder with Cloudflare Pages or a GitHub Pages Actions workflow.
+Privacy pages: publish the `site/` folder with Cloudflare Pages or any static hosting.
 
 ## Publish to stores
 

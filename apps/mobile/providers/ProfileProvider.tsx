@@ -86,11 +86,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<ProfileContextValue>(() => {
-    const emailName = user?.email?.split('@')[0] ?? '';
-    const fallbackHandle = cleanHandle(t.profileHandle) || emailName;
+    const accountHandle = cleanHandle(user?.telegramUsername ?? '');
+    const fallbackHandle = accountHandle || cleanHandle(t.profileHandle);
     return {
       profile: {
-        displayName: edits.displayName || user?.user_metadata?.display_name || emailName || t.listener,
+        displayName: edits.displayName || user?.displayName || t.listener,
         handle: edits.handle || fallbackHandle,
         bio: edits.bio ?? t.profileBio,
         avatarUri: edits.avatarUri ?? null,

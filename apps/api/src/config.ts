@@ -26,24 +26,22 @@ function loadEnvFile() {
 
 loadEnvFile();
 
-function required(name: string, fallback?: string): string {
-  const value = process.env[name] ?? fallback;
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
+const flag = (name: string) => /^(1|true|yes|require)$/i.test(process.env[name] ?? "");
 
 export const config = {
   port: Number(process.env.PORT ?? 8787),
+  production: process.env.NODE_ENV === "production",
   publicAppUrl: process.env.PUBLIC_APP_URL ?? "https://sonari.app",
-  supabaseUrl: required("SUPABASE_URL", "https://placeholder.supabase.co"),
-  supabaseAnonKey: required("SUPABASE_ANON_KEY", "placeholder-anon-key"),
-  supabaseServiceRoleKey: required(
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "placeholder-service-role-key"
-  ),
+  /** postgresql://user:password@host:5432/dbname — from the Timeweb database panel. */
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  databaseSsl: flag("DATABASE_SSL"),
+  /** Sessions last this long without the listener signing in again. */
+  sessionDays: Number(process.env.SESSION_DAYS ?? 180),
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  /** API key from sms.ru → Settings → API. */
+  smsRuApiId: process.env.SMS_RU_API_ID ?? "",
+  /** Development only: print SMS codes to the log instead of sending them. Ignored in production. */
+  smsDevEcho: flag("SMS_DEV_ECHO"),
   githubRepo: process.env.GITHUB_REPO ?? "Simer2101/ai-musik",
   githubBranch: process.env.GITHUB_BRANCH ?? "main",
   corsOrigins: (process.env.CORS_ORIGINS ?? "*")
@@ -61,10 +59,8 @@ function looksReal(value: string) {
 }
 
 export const isConfigured = {
-  supabase:
-    looksReal(config.supabaseUrl) &&
-    looksReal(config.supabaseAnonKey) &&
-    !config.supabaseUrl.includes("YOUR_PROJECT"),
+  database: looksReal(config.databaseUrl),
   github: Boolean(config.githubRepo),
-  telegram: Boolean(config.telegramBotToken),
+  telegram: looksReal(config.telegramBotToken),
+  sms: looksReal(config.smsRuApiId) || (config.smsDevEcho && !config.production),
 };
