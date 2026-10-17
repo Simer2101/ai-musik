@@ -11,6 +11,7 @@ import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { TrackRow } from '@/components/ui';
 import { api } from '@/lib/api';
 import { demoApi } from '@/lib/demo';
+import { useLikeToggle } from '@/lib/likes';
 import type { Track } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePlayer } from '@/providers/PlayerProvider';
@@ -24,6 +25,10 @@ export default function LibraryScreen() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Unliking here keeps the row with an empty heart, so a mis-tap can be undone in place.
+  const toggleLike = useLikeToggle(setTracks, {
+    onError: (message) => setError(message === null ? null : message || t.likeFail),
+  });
 
   const load = useCallback(async () => {
     if (!user) {
@@ -89,6 +94,7 @@ export default function LibraryScreen() {
           key={track.id}
           track={track}
           onPress={() => router.push(`/track/${track.id}`)}
+          onLike={() => void toggleLike(track)}
         />
       ))}
     </ScrollView>

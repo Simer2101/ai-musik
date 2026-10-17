@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { usePlayerBarVisible } from '@/components/MiniPlayer';
 import { PLAYER_HEIGHT, useDesktop } from '@/lib/layout';
-import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
 
 // Flat page background; on desktop the screen sits in a rounded panel beside the sidebar.
 export function ScreenBackdrop({ children }: { children: ReactNode }) {
   const { colors } = useSettings();
   const desktop = useDesktop();
-  const { track } = usePlayer();
+  const playerBar = usePlayerBarVisible();
 
   if (!desktop) {
     return <View style={[styles.screen, { backgroundColor: colors.bg }]}>{children}</View>;
@@ -20,7 +20,7 @@ export function ScreenBackdrop({ children }: { children: ReactNode }) {
       <View
         style={[
           styles.panel,
-          { backgroundColor: colors.hero, marginBottom: track ? PLAYER_HEIGHT + 16 : 8 },
+          { backgroundColor: colors.hero, marginBottom: playerBar ? PLAYER_HEIGHT + 16 : 8 },
         ]}>
         {children}
       </View>

@@ -100,19 +100,26 @@ export function TrackRow({
           {` · ${formatClock(track.durationMs)}`}
         </Text>
       </View>
+      {/* Stores want the AI label on every track, so the heart sits beside it, never instead. */}
+      <Text style={{ color: colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8 }}>
+        {track.aiGenerated ? t.aiGenerated : t.userUpload}
+      </Text>
       {onLike ? (
-        <PressableScale onPress={onLike} hitSlop={12} scaleTo={0.86}>
+        <PressableScale
+          onPress={onLike}
+          hitSlop={8}
+          scaleTo={0.86}
+          accessibilityRole="button"
+          accessibilityLabel={track.liked ? t.likedShort : t.like}
+          accessibilityState={{ selected: track.liked }}
+          style={styles.rowLike}>
           <Icon
             name={track.liked ? 'heartFilled' : 'heart'}
             color={track.liked ? colors.accent2 : colors.muted}
-            size={20}
+            size={22}
           />
         </PressableScale>
-      ) : (
-        <Text style={{ color: colors.muted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8 }}>
-          {track.aiGenerated ? t.aiGenerated : t.userUpload}
-        </Text>
-      )}
+      ) : null}
     </PressableScale>
   );
 }
@@ -161,6 +168,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowBody: { flex: 1, gap: 3 },
+  rowLike: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 15, fontWeight: '600' },
   button: {
     alignSelf: 'flex-start',

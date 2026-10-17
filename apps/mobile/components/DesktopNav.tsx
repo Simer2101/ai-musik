@@ -3,11 +3,11 @@ import { type Href, usePathname, useRouter } from 'expo-router';
 
 import { Text } from '@/components/AppText';
 import { Icon, type IconName } from '@/components/Icon';
+import { usePlayerBarVisible } from '@/components/MiniPlayer';
 import { PressableScale } from '@/components/PressableScale';
 import { fonts } from '@/constants/Fonts';
 import { PLAYER_HEIGHT, SIDEBAR_WIDTH } from '@/lib/layout';
 import { AD_FREE_PRICE_RUB } from '@/lib/tokens';
-import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
 import { useTokens } from '@/providers/TokensProvider';
 
@@ -16,7 +16,7 @@ export function DesktopNav() {
   const pathname = usePathname();
   const { colors, t, language } = useSettings();
   const { adFree } = useTokens();
-  const { track } = usePlayer();
+  const playerBar = usePlayerBarVisible();
 
   const items: { href: Href; label: string; icon: IconName }[] = [
     { href: '/', label: t.tabListen, icon: 'headphones' },
@@ -31,7 +31,7 @@ export function DesktopNav() {
   );
 
   return (
-    <View style={[styles.side, { backgroundColor: colors.hero, marginBottom: track ? PLAYER_HEIGHT + 16 : 8 }]}>
+    <View style={[styles.side, { backgroundColor: colors.hero, marginBottom: playerBar ? PLAYER_HEIGHT + 16 : 8 }]}>
       <Text style={[styles.logo, fonts.display('800'), { color: colors.text }]}>
         Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
       </Text>

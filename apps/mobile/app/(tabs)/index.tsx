@@ -16,6 +16,7 @@ import { formatClock, trackTitle } from '@/lib/cover';
 import { demoApi } from '@/lib/demo';
 import { useDesktop } from '@/lib/layout';
 import type { Track } from '@/lib/types';
+import { useLikeToggle } from '@/lib/likes';
 import { filterByNeedles, GENRES, genreLabel, searchTracks, type Mood } from '@/lib/wave';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePlayer } from '@/providers/PlayerProvider';
@@ -159,6 +160,11 @@ export default function ListenScreen() {
   const [style, setStyle] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [likeError, setLikeError] = useState<string | null>(null);
+  const toggleLike = useLikeToggle(setTracks, {
+    onDone: () => setLiked(user ? demoApi.myLikes().tracks : []),
+    onError: (message) => setLikeError(message === null ? null : message || t.likeFail),
+  });
 
   const load = useCallback(async () => {
     setRefreshing(true);
@@ -294,8 +300,14 @@ export default function ListenScreen() {
                 </PressableScale>
               </View>
             ) : null}
+            {likeError ? <Text style={{ color: colors.danger }}>{likeError}</Text> : null}
             {visible.map((item) => (
-              <TrackRow key={item.id} track={item} onPress={() => openTrack(item)} />
+              <TrackRow
+                key={item.id}
+                track={item}
+                onPress={() => openTrack(item)}
+                onLike={() => void toggleLike(item)}
+              />
             ))}
           </View>
         ) : (

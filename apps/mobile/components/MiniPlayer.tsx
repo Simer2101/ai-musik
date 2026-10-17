@@ -12,13 +12,23 @@ import { usePlayer } from '@/providers/PlayerProvider';
 import { useSettings } from '@/providers/SettingsProvider';
 import { TrackCover } from '@/components/ui';
 
+/**
+ * The bar shows whenever something is loaded, except on screens that have their own big
+ * player (track page, wave). Layouts use this to reserve room for the bar only when it shows.
+ */
+export function usePlayerBarVisible() {
+  const pathname = usePathname();
+  const { track } = usePlayer();
+  return Boolean(track) && !pathname.startsWith('/track/') && !pathname.startsWith('/wave');
+}
+
 export function MiniPlayer() {
   const router = useRouter();
-  const pathname = usePathname();
   const desktop = useDesktop();
   const { colors } = useSettings();
   const { track, isPlaying, positionMs, durationMs, toggle, next, prev, seek } = usePlayer();
-  if (!track || pathname.startsWith('/track/') || pathname.startsWith('/wave')) return null;
+  const visible = usePlayerBarVisible();
+  if (!track || !visible) return null;
 
   const progress = durationMs > 0 ? Math.min(positionMs / durationMs, 1) : 0;
 
