@@ -5,6 +5,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 
 import { Text, TextInput } from '@/components/AppText';
 import { Icon } from '@/components/Icon';
+import { Logo } from '@/components/Logo';
 import { PressableScale } from '@/components/PressableScale';
 import { fonts } from '@/constants/Fonts';
 import { formatPhone, normalizePhone } from '@/lib/phone';
@@ -128,6 +129,7 @@ export default function AuthScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: colors.bg }]}>
       <View style={styles.form}>
+        <Logo height={40} style={styles.logo} />
         <Text style={[fonts.display('700'), styles.heading, { color: colors.text }]}>{t.authTitle}</Text>
         <Text style={[styles.copy, { color: colors.muted }]}>{t.authCopy}</Text>
 
@@ -241,6 +243,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
   form: { alignSelf: 'center', width: 420, maxWidth: '100%', gap: 12 },
+  logo: { marginBottom: 12 },
   heading: { fontSize: 28, lineHeight: 34, letterSpacing: -0.5 },
   copy: { marginBottom: 8, lineHeight: 22 },
   button: {

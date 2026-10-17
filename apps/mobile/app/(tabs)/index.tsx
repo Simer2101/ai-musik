@@ -7,6 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { Text, TextInput, useFocusRing } from '@/components/AppText';
 import { HorizontalCarousel } from '@/components/HorizontalCarousel';
 import { Icon } from '@/components/Icon';
+import { Logo } from '@/components/Logo';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { SectionTitle, TrackCover, TrackRow } from '@/components/ui';
@@ -248,9 +249,7 @@ export default function ListenScreen() {
         ) : (
           <>
             <View style={styles.header}>
-              <Text style={[fonts.display('800'), { color: colors.text, fontSize: 22, letterSpacing: -0.4 }]}>
-                Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
-              </Text>
+              <Logo height={32} />
               <View style={styles.headerRight}>
                 <PressableScale
                   onPress={() => setSearchOpen((open) => !open)}

@@ -5,6 +5,7 @@ import { Text } from '@/components/AppText';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { Logo } from '@/components/Logo';
 import { PressableScale } from '@/components/PressableScale';
 import { ScreenBackdrop } from '@/components/ScreenBackdrop';
 import { fonts } from '@/constants/Fonts';
@@ -124,7 +125,7 @@ export default function PlansScreen() {
 
           <View style={styles.wideBody}>
             <View style={[styles.card, styles.widePlan, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.brand, { color: colors.muted }]}>Sonari</Text>
+              <Logo height={20} color={colors.muted} />
               <Text style={[fonts.display('700'), { color: colors.accent, fontSize: 30, lineHeight: 36 }]}>
                 {t.planAdFreeName}
               </Text>
@@ -186,7 +187,7 @@ export default function PlansScreen() {
 
             <Text style={[styles.section, { color: colors.text }]}>{t.plansAvailable}</Text>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.brand, { color: colors.muted }]}>Sonari</Text>
+              <Logo height={20} color={colors.muted} />
               <Text style={[styles.planName, { color: colors.success }]}>{t.planAdFreeName}</Text>
               <Text style={[styles.price, { color: colors.muted }]}>{price}</Text>
               <View style={styles.bullets}>
@@ -243,7 +244,6 @@ const styles = StyleSheet.create({
   ctaText: { fontWeight: '800', fontSize: 16 },
   section: { fontSize: 22, fontWeight: '800', marginTop: 8 },
   card: { borderRadius: 12, padding: 20, gap: 12 },
-  brand: { fontSize: 13, fontWeight: '800', letterSpacing: 0.3 },
   planName: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, lineHeight: 32 },
   price: { fontSize: 15, fontWeight: '600' },
   bullets: { gap: 8, paddingVertical: 4 },

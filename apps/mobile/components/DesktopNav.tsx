@@ -3,6 +3,7 @@ import { type Href, usePathname, useRouter } from 'expo-router';
 
 import { Text } from '@/components/AppText';
 import { Icon, type IconName } from '@/components/Icon';
+import { Logo } from '@/components/Logo';
 import { usePlayerBarVisible } from '@/components/MiniPlayer';
 import { PressableScale } from '@/components/PressableScale';
 import { fonts } from '@/constants/Fonts';
@@ -32,9 +33,7 @@ export function DesktopNav() {
 
   return (
     <View style={[styles.side, { backgroundColor: colors.hero, marginBottom: playerBar ? PLAYER_HEIGHT + 16 : 8 }]}>
-      <Text style={[styles.logo, fonts.display('800'), { color: colors.text }]}>
-        Son<Text style={[fonts.display('800'), { color: colors.accent }]}>ari</Text>
-      </Text>
+      <Logo height={34} style={styles.logo} />
       <View style={styles.items}>
         {items.map((item) => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href as string);
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 28,
   },
-  logo: { fontSize: 22, letterSpacing: -0.4, paddingHorizontal: 10 },
+  logo: { marginHorizontal: 10 },
   items: { gap: 2 },
   item: {
     flexDirection: 'row',
